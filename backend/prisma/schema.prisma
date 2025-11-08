@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Modelo User para autenticación y gestión de usuarios
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  username  String   @unique
+  password  String   // Hash bcrypt de la contraseña
+
+  // Campos de auditoría
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Campos adicionales opcionales
+  isActive  Boolean  @default(true)
+  lastLogin DateTime?
+
+  @@map("users")
+  @@index([email])
+  @@index([username])
+}
+
+// Modelo Session para gestión de sesiones (opcional, por ahora usamos express-session)
+model Session {
+  id        String   @id @default(uuid())
+  sid       String   @unique
+  data      String   // JSON serializado
+  expiresAt DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("sessions")
+  @@index([sid])
+  @@index([expiresAt])
+}
