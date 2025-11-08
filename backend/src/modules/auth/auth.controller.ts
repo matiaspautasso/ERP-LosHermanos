@@ -113,11 +113,17 @@ export class AuthController {
     }
 
     // Destruir la sesión
-    session.destroy();
-
-    return {
-      message: 'Sesión cerrada exitosamente',
-    };
+    return new Promise((resolve, reject) => {
+      session.destroy((err: any) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve({
+            message: 'Sesión cerrada exitosamente',
+          });
+        }
+      });
+    });
   }
 
   @Get('profile')

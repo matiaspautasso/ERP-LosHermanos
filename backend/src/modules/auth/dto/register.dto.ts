@@ -23,12 +23,12 @@ export class RegisterDto {
   username: string;
 
   @ApiProperty({
-    description: 'Contraseña (mínimo 6 caracteres)',
-    example: 'password123',
-    minLength: 6,
+    description: 'Contraseña (mínimo 4 caracteres)',
+    example: 'pass',
+    minLength: 4,
   })
   @IsNotEmpty({ message: 'La contraseña es requerida' })
   @IsString()
-  @MinLength(6, { message: 'La contraseña debe tener al menos 6 caracteres' })
+  @MinLength(4, { message: 'La contraseña debe tener al menos 4 caracteres' })
   password: string;
 }

@@ -5,14 +5,16 @@ import { toast } from 'sonner';
 import { Button } from '@/componentes/ui/button';
 import { Input } from '@/componentes/ui/input';
 import { Label } from '@/componentes/ui/label';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const { register, registerLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  
 
   const handleRegister = async () => {
     // Validación simple
@@ -26,29 +28,13 @@ export default function RegisterPage() {
       return;
     }
 
-    if (password.length < 6) {
-      toast.error('La contraseña debe tener al menos 6 caracteres');
+    if (password.length < 4) {
+      toast.error('La contraseña debe tener al menos 4 caracteres');
       return;
     }
 
-    setLoading(true);
-
-    try {
-      // TODO: Conectar con el backend
-      console.log('Registro exitoso:', { email, username });
-
-      toast.success('¡Usuario registrado exitosamente!');
-
-      // Redirigir a login después de 1.5 segundos
-      setTimeout(() => {
-        navigate('/login');
-      }, 1500);
-    } catch (error) {
-      toast.error('Error al registrar usuario');
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
+    // Llamar al backend
+    register({ email, username, password });
   };
 
   return (
@@ -93,7 +79,7 @@ export default function RegisterPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="bg-transparent border-[#afa2c3] text-[#f1eef7] placeholder:text-[#afa2c3] rounded-lg h-14 focus-visible:ring-[#a03cea] focus-visible:ring-offset-0"
                 placeholder="correo@ejemplo.com"
-                disabled={loading}
+                disabled={registerLoading}
               />
             </div>
 
@@ -109,7 +95,7 @@ export default function RegisterPage() {
                 onChange={(e) => setUsername(e.target.value)}
                 className="bg-transparent border-[#afa2c3] text-[#f1eef7] placeholder:text-[#afa2c3] rounded-lg h-14 focus-visible:ring-[#a03cea] focus-visible:ring-offset-0"
                 placeholder="Ingresa tu usuario"
-                disabled={loading}
+                disabled={registerLoading}
               />
             </div>
 
@@ -126,14 +112,14 @@ export default function RegisterPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   className="bg-transparent border-[#afa2c3] text-[#f1eef7] placeholder:text-[#afa2c3] rounded-lg h-14 pr-12 focus-visible:ring-[#a03cea] focus-visible:ring-offset-0"
                   placeholder="Ingresa tu contraseña"
-                  disabled={loading}
+                  disabled={registerLoading}
                   onKeyDown={(e) => e.key === 'Enter' && handleRegister()}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-[#B2A6C5] hover:text-[#f1eef7] transition-colors"
-                  disabled={loading}
+                  disabled={registerLoading}
                 >
                   {showPassword ? (
                     <Eye className="w-6 h-6" />
@@ -148,10 +134,10 @@ export default function RegisterPage() {
             <div className="pt-6">
               <Button
                 onClick={handleRegister}
-                disabled={loading}
+                disabled={registerLoading}
                 className="w-full h-14 bg-transparent border-[5px] border-[#f1eef7] text-[#f1eef7] hover:bg-[#f1eef7] hover:text-[#2c5b2d] rounded-lg transition-all"
               >
-                {loading ? 'Registrando...' : 'Registrarse'}
+                {registerLoading ? 'Registrando...' : 'Registrarse'}
               </Button>
             </div>
           </div>
@@ -163,7 +149,7 @@ export default function RegisterPage() {
           <button
             onClick={() => navigate('/login')}
             className="text-white hover:text-[#fefbe4] transition-colors underline"
-            disabled={loading}
+            disabled={registerLoading}
           >
             Iniciar sesion
           </button>

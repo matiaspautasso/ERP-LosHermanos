@@ -176,7 +176,7 @@ export class AuthService {
   /**
    * Obtener perfil de usuario
    */
-  async getProfile(userId: string) {
+  async getProfile(userId: bigint) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -199,7 +199,7 @@ export class AuthService {
   /**
    * Cerrar sesión
    */
-  async logout(userId: string) {
+  async logout(userId: bigint) {
     this.logger.log(`Usuario cerró sesión: ${userId}`);
 
     return {
