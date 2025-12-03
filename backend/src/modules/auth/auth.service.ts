@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as bcrypt from 'bcrypt';
-import { PrismaService } from '../../common/prisma/prisma.service';
+import { PrismaService } from '../../core/prisma/prisma.service';
 import { LoginDto, RegisterDto, RecoverDto } from './dto';
 import {
   UserRegisteredEvent,

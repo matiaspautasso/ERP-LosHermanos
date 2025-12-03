@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
-import { Button } from '@/componentes/ui/button';
-import { Input } from '@/componentes/ui/input';
-import { Label } from '@/componentes/ui/label';
-import { Checkbox } from '@/componentes/ui/checkbox';
-import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
+import { Label } from '@/shared/components/ui/label';
+import { Checkbox } from '@/shared/components/ui/checkbox';
+import { useAuth } from '../hooks/useAuth';
 import logoLosHermanos from '@/assets/logo-los-hermanos.png';
 
 export default function LoginPage() {

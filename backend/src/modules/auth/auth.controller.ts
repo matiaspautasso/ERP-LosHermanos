@@ -11,7 +11,7 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto, RecoverDto } from './dto';
-import { GetUser } from '../../common/decorators/get-user.decorator';
+import { GetUser } from '../../shared/decorators/get-user.decorator';
 
 @ApiTags('auth')
 @Controller('auth')

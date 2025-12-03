@@ -1,17 +1,17 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Button } from '@/componentes/ui/button';
-import { Input } from '@/componentes/ui/input';
-import { Label } from '@/componentes/ui/label';
+import { Button } from '@/shared/components/ui/button';
+import { Input } from '@/shared/components/ui/input';
+import { Label } from '@/shared/components/ui/label';
 import {
   AlertDialog,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/componentes/ui/alert-dialog';
-import { useAuth } from '@/hooks/useAuth';
+} from '@/shared/components/ui/alert-dialog';
+import { useAuth } from '../hooks/useAuth';
 
 export default function RecoverPage() {
   const navigate = useNavigate();

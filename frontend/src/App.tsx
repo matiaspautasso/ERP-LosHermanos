@@ -1,9 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
-import LoginPage from './paginas/login/LoginPage';
-import RegisterPage from './paginas/registro/RegisterPage';
-import RecoverPage from './paginas/registro/RecoverPage';
+import LoginPage from './modules/auth/pages/LoginPage';
+import RegisterPage from './modules/auth/pages/RegisterPage';
+import RecoverPage from './modules/auth/pages/RecoverPage';
 
 // Configuración de TanStack Query
 const queryClient = new QueryClient({

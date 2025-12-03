@@ -29,7 +29,9 @@
       "Bash(dir /B /A)",
       "Bash(gh repo view:*)",
       "Bash(done)",
-      "Bash(timeout /t 5)"
+      "Bash(timeout /t 5)",
+      "Bash(git checkout:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

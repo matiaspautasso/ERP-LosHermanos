@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { EmailService } from '../../email/email.service';
-import { PrismaService } from '../../../common/prisma/prisma.service';
+import { PrismaService } from '../../../core/prisma/prisma.service';
 import { PasswordRecoveryRequestedEvent } from '../events';
 
 @Injectable()

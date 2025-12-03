@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { authService } from '@/api/authService';
-import { useAuthStore } from '@/estado/authStore';
-import type { LoginRequest, RegisterRequest, RecoverRequest } from '@/api/types';
+import { authService } from '../api/authService';
+import { useAuthStore } from '@/core/store/authStore';
+import type { LoginRequest, RegisterRequest, RecoverRequest } from '../api/types';
 
 /**
  * Hook personalizado para manejar autenticación con TanStack Query
@@ -81,13 +81,6 @@ export function useAuth() {
     queryFn: () => authService.getProfile(),
     enabled: isAuthenticated, // Solo ejecutar si hay usuario autenticado
     retry: false,
-    onSuccess: (data) => {
-      setUser(data);
-    },
-    onError: () => {
-      // Si falla al obtener el perfil, cerrar sesión
-      clearUser();
-    },
   });
 
   return {
