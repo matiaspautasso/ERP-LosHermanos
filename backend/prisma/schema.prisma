@@ -113,7 +113,7 @@ model movimientos_stock {
   doc_adjunto_ruta String?   @db.VarChar(260)
   usuario_id       BigInt
   productos        productos @relation(fields: [producto_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user             User      @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user         User  @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([fecha_hora], map: "ix_mstock_fecha")
   @@index([producto_id], map: "ix_mstock_producto")
@@ -133,7 +133,7 @@ model ordenes_compra {
   usuario_id    BigInt
   detalle_oc    detalle_oc[]
   proveedores   proveedores   @relation(fields: [proveedor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user          User          @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user      User      @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   recepciones   recepciones[]
 
   @@index([estado], map: "ix_oc_estado")
@@ -168,7 +168,7 @@ model precios {
   ultima_modificacion DateTime  @default(now()) @db.Timestamptz(6)
   usuario_id          BigInt
   productos           productos @relation(fields: [producto_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user                User      @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user            User  @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([producto_id], map: "ix_precios_producto")
   @@index([ultima_modificacion], map: "ix_precios_ult")
@@ -225,7 +225,7 @@ model recepciones {
   usuario_id        BigInt
   detalle_recepcion detalle_recepcion[]
   ordenes_compra    ordenes_compra      @relation(fields: [orden_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user              User                @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user          User            @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([estado], map: "ix_rec_estado")
   @@index([fecha], map: "ix_rec_fecha")
@@ -240,7 +240,7 @@ model recuperos_credenciales {
   solicitado_en DateTime  @default(now()) @db.Timestamptz(6)
   utilizado_en  DateTime? @db.Timestamptz(6)
   vigente       Boolean   @default(true)
-  user          User      @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user      User  @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([usuario_id], map: "ix_recupero_usuario")
 }
