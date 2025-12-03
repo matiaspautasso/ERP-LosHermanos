@@ -1,156 +1,71 @@
-# ERP Los Hermanos
+# ERP Los Hermanos - Sistema de Gestión Empresarial
 
-Sistema de Planificacion de Recursos Empresariales (ERP) modular y escalable para la gestion integral de negocios.
+> **Estado:** En Desarrollo | **Último Update:** Dic 2025 | **Progreso:** 30%
 
-## Descripcion
+## 🎯 Descripción
 
-ERP Los Hermanos es un sistema completo de gestion empresarial que incluye modulos para:
+Sistema ERP integral para empresas medianas con gestión de usuarios, clientes, gestión de stock, ventas y compras.
 
-- **Autenticacion y Usuarios**: Sistema completo de registro, login, recuperacion de contrasena y verificacion por email
-- **Clientes**: Gestion de clientes y relaciones (En desarrollo)
-- **Productos**: Catalogo de productos e inventario (En desarrollo)
-- **Ventas**: Gestion de ventas y facturacion (En desarrollo)
-- **Compras**: Gestion de compras y proveedores (En desarrollo)
-- **Reportes**: Analisis y reportes del negocio (En desarrollo)
+**Stack Tecnológico:**
+- **Backend:** NestJS + TypeScript + Prisma + PostgreSQL (Supabase)
+- **Frontend:** React + TypeScript + Vite + TailwindCSS + shadcn/ui  
+- **Base de Datos:** 17 tablas relacionadas, normalizada
 
-## Tecnologias
+## 📊 Módulos del Sistema
 
-### Backend
-- **NestJS**: Framework progresivo de Node.js
-- **Prisma**: ORM para TypeScript y Node.js
-- **PostgreSQL**: Base de datos relacional
-- **JWT**: Autenticacion basada en tokens
-- **Nodemailer**: Servicio de envio de emails
-- **Event Emitter**: Sistema de eventos para arquitectura desacoplada
+### ✅ **Autenticación** (100%)
+Sistema completo de usuarios con registro, login, recuperación de contraseña y perfiles.
+- **Endpoints:** `/auth/register`, `/auth/login`, `/auth/logout`, `/auth/recover`, `/auth/profile`
+- **Frontend:** LoginPage, RegisterPage, RecoverPage
+- **BD:** Tabla `usuarios`
 
-### Frontend
-- **React 18**: Biblioteca de UI
-- **TypeScript**: Tipado estatico
-- **Vite**: Build tool rapido
-- **React Router DOM**: Enrutamiento
-- **Zustand**: Estado global
-- **TailwindCSS**: Framework de estilos
-- **shadcn/ui**: Componentes UI accesibles
-- **Axios**: Cliente HTTP
+### 🔄 **Gestión de Clientes** (0% - Planificado)
+CRUD de clientes, cuenta corriente y gestión de pagos.
+- **BD:** `clientes`, `movimientos_cc`, `pagos_cliente`
+- **Stack:** NestJS + React + Prisma
 
-## Estructura del Proyecto
+### 🔄 **Gestión de Stock** (0% - Planificado)  
+Catálogo de productos, categorías, precios y control de inventario.
+- **BD:** `productos`, `categorias`, `precios`, `stock`
+- **Stack:** NestJS + React + Prisma
 
-```
-ERP-LosHermanos/
-├── backend/          # API NestJS
-├── frontend/         # Aplicacion React
-├── database/         # Scripts y migraciones de BD
-├── docs/             # Documentacion del proyecto
-│   ├── modulos/      # Documentacion por modulo
-│   └── guias/        # Guias de desarrollo
-└── infraestructura/  # Configuracion de infraestructura
-```
+### 🔄 **Gestión de Ventas** (0% - Planificado)
+Facturación, cotizaciones y reportes de ventas.
+- **BD:** `ventas`, `detalle_venta`
+- **Stack:** NestJS + React + Prisma
 
-## Estado del Proyecto
+### 🔄 **Gestión de Compras** (0% - Planificado)
+Proveedores, órdenes de compra y recepción de mercadería.
+- **BD:** `proveedores`, `ordenes_compra`, `detalle_orden`
+- **Stack:** NestJS + React + Prisma
 
-### Modulos Completados
-- **Autenticacion** (100%)
-  - Registro de usuarios
-  - Login con JWT
-  - Recuperacion de contrasena
-  - Verificacion por email
-  - Sistema de sesiones
+### 🔄 **Reportes** (0% - Planificado)
+Dashboard ejecutivo con métricas y análisis de negocio.
+- **BD:** Views y stored procedures
+- **Stack:** NestJS + React + Charts.js
 
-### Modulos En Desarrollo
-- Clientes (0%)
-- Productos (0%)
-- Ventas (0%)
-- Compras (0%)
-- Reportes (0%)
+## 🚀 Instalación y Configuración
 
-Ver [ROADMAP.md](./ROADMAP.md) para mas detalles del progreso.
-
-## Instalacion
-
-### Prerrequisitos
-- Node.js 18+
-- PostgreSQL 14+
-- npm o yarn
-
-### Backend
-
+### 1. Backend
 ```bash
 cd backend
 npm install
-cp .env.example .env
-# Configurar variables de entorno en .env
-npx prisma migrate dev
-npm run start:dev
+npm run start:dev  # http://localhost:3000
 ```
 
-### Frontend
-
+### 2. Frontend
 ```bash
 cd frontend
 npm install
-cp .env.example .env
-# Configurar variables de entorno en .env
-npm run dev
+npm run dev        # http://localhost:5173
 ```
 
-## Configuracion
+### 3. Base de Datos
+- Configurar variables en `.env` (Supabase)
+- El script SQL está en `database/DB-script-Loshermanos.sql`
 
-### Variables de Entorno - Backend
+## 📚 Documentación
 
-```env
-DATABASE_URL="postgresql://user:password@localhost:5432/erp_db"
-JWT_SECRET="tu-secret-key"
-SMTP_HOST="smtp.gmail.com"
-SMTP_PORT=587
-SMTP_USER="tu-email@gmail.com"
-SMTP_PASS="tu-password"
-FRONTEND_URL="http://localhost:5173"
-```
-
-### Variables de Entorno - Frontend
-
-```env
-VITE_API_URL="http://localhost:3000"
-```
-
-## Uso
-
-1. Iniciar el backend: `cd backend && npm run start:dev`
-2. Iniciar el frontend: `cd frontend && npm run dev`
-3. Abrir navegador en `http://localhost:5173`
-
-## Arquitectura
-
-Este proyecto sigue una arquitectura modular escalable:
-
-- **Backend**: Arquitectura por modulos con NestJS
-- **Frontend**: Arquitectura por features/modulos
-- **Base de Datos**: PostgreSQL con Prisma ORM
-- **Comunicacion**: API REST con autenticacion JWT
-
-Ver [ARQUITECTURA.md](./ARQUITECTURA.md) para mas detalles.
-
-## Documentacion
-
-La documentacion completa esta organizada en la carpeta `docs/`:
-
-- [Modulo de Autenticacion](./docs/modulos/01-autenticacion/README.md)
-- [Guia de Desarrollo](./docs/guias/desarrollo.md)
-- [Guia de Deployment](./docs/guias/deployment.md)
-
-## Contribuir
-
-Ver [docs/guias/contributing.md](./docs/guias/contributing.md)
-
-## Licencia
-
-Este proyecto es privado y confidencial.
-
-## Autor
-
-Matias - ERP Los Hermanos
-
----
-
-**Version**: 0.1.0
-**Ultima Actualizacion**: 2025-12-03
+- **[Autenticación](docs/modulos/01-autenticacion/README.md)** - Estado y configuración del módulo Auth
+- **[Roadmap](ROADMAP.md)** - Cronograma de desarrollo
+- **[Arquitectura](ARQUITECTURA.md)** - Documentación técnica
