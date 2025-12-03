@@ -3,7 +3,7 @@
 > **Última actualización:** 2025-11-08
 > **Módulo actual:** Gestión de Usuarios (Autenticación) - ✅ FUNCIONANDO
 
----
+--- Documentación desactualizada (dice 6, debería decir 4)
 
 ## 📋 ÍNDICE
 
@@ -116,6 +116,7 @@ ERP-LosHermanos/
 - ✅ Logout
 - ✅ Obtención de perfil de usuario
 - ✅ Hash de contraseñas con bcrypt (10 rounds)
+- ✅ Validación de contraseñas con mínimo 4 caracteres
 - ✅ Sesiones HTTP-only cookies (24 horas)
 - ✅ Eventos de dominio (user.registered, user.logged-in, password-recovery-requested)
 - ✅ Validación de DTOs con class-validator
@@ -123,7 +124,7 @@ ERP-LosHermanos/
 
 **DTOs Implementados:**
 - `LoginDto`: emailOrUsername, password, rememberMe
-- `RegisterDto`: email, username, password
+- `RegisterDto`: email, username (3-30 chars), password (min 4 chars)
 - `RecoverDto`: email
 
 ---
@@ -198,6 +199,60 @@ VITE_API_URL=http://localhost:3000/api
 
 ---
 
+## 🗄️ ESTRUCTURA COMPLETA DE BASE DE DATOS
+
+**Script principal:** `DB-script-Loshermanos.sql`
+**Estado:** ✅ Ejecutado en Supabase (17 tablas creadas)
+**Alcance:** Sistema ERP completo (todos los módulos)
+
+### **📊 MÓDULOS Y TABLAS IMPLEMENTADAS:**
+
+#### **🔐 Módulo Autenticación (2 tablas):**
+- `usuarios` - Datos de usuarios del sistema
+- `recuperos_credenciales` - Tokens de recuperación de contraseñas
+
+#### **👥 Módulo Clientes (3 tablas):**
+- `clientes` - Datos básicos (Minorista/Mayorista)
+- `movimientos_cc` - Cuenta corriente (Ventas/Pagos)
+- `pagos_cliente` - Registro de pagos recibidos
+
+#### **📦 Módulo Productos/Stock (5 tablas):**
+- `categorias` - Categorías de productos
+- `unidades` - Unidades de medida
+- `productos` - Catálogo completo con stock
+- `precios` - Precios Minorista/Mayorista por producto
+- `movimientos_stock` - Ingresos/Egresos de inventario
+
+#### **💰 Módulo Ventas (2 tablas):**
+- `ventas` - Cabecera de ventas (cliente, total, forma pago)
+- `detalle_venta` - Items vendidos por cada venta
+
+#### **🛒 Módulo Compras/Proveedores (5 tablas):**
+- `proveedores` - Datos de proveedores
+- `ordenes_compra` - Órdenes de compra con estados
+- `detalle_oc` - Items por orden de compra
+- `recepciones` - Recepción de mercadería
+- `detalle_recepcion` - Detalle de cantidades recibidas
+
+### **🔗 RELACIONES PRINCIPALES:**
+- **Usuario** → Ventas, Compras, Movimientos (trazabilidad)
+- **Cliente** → Ventas → Detalles (1:N:N)
+- **Producto** → Stock, Precios, Ventas, Compras (hub central)
+- **Proveedor** → Órdenes → Recepciones (flujo de compras)
+
+### **⚡ FUNCIONALIDADES DE BD LISTAS:**
+- ✅ **Gestión completa de clientes** (tipos, cuenta corriente)
+- ✅ **Control de stock avanzado** (movimientos, mínimos)
+- ✅ **Precios diferenciados** (minorista/mayorista)
+- ✅ **Flujo completo de ventas** (cabecera + detalle)
+- ✅ **Gestión de proveedores y compras** (órdenes + recepciones)
+- ✅ **Trazabilidad completa** (usuario en cada operación)
+- ✅ **Índices optimizados** para performance
+
+**🎯 SIGNIFICADO:** La base de datos está **100% lista** para soportar un ERP completo. Solo faltan desarrollar los módulos de backend/frontend que usen estas tablas.
+
+---
+
 ### FASE 4: Documentación - ❌ PENDIENTE (0%)
 
 | # | Tarea | Estado | Notas |
@@ -212,6 +267,71 @@ VITE_API_URL=http://localhost:3000/api
 - Diagramas de arquitectura
 - Casos de uso
 - Modelos de datos
+
+---
+
+### FASE 4.1: Funcionalidades Pendientes - ❌ PENDIENTE (0%)
+
+| # | Tarea | Estado | Ubicación | Notas |
+|---|-------|--------|-----------|-------|
+| 1 | Conectar RecoverPage con backend | ❌ PENDIENTE | `frontend/src/paginas/registro/RecoverPage.tsx` | Reemplazar TODO línea 36 |
+| 2 | Implementar servicio de Email | ❌ PENDIENTE | `backend/src/modules/email/` | Para envío real de contraseñas temporales |
+| 3 | Crear listener para eventos de recuperación | ❌ PENDIENTE | `backend/src/modules/auth/listeners/` | Escuchar `password-recovery-requested` |
+
+**Detalles de Implementación Faltante:**
+
+**1. Frontend - RecoverPage.tsx:**
+```typescript
+// Línea 36 - Reemplazar TODO:
+const { recover, recoverLoading } = useAuth();
+recover({ email }); // Usar hook existente
+```
+
+**2. Backend - Email Service:**
+```typescript
+// Crear: backend/src/modules/email/email.service.ts
+// Integrar con: SendGrid, Nodemailer, o AWS SES
+// Enviar contraseña temporal por email real
+```
+
+**3. Backend - Event Listener:**
+```typescript
+// Crear: backend/src/modules/auth/listeners/password-recovery.listener.ts
+// Escuchar evento 'password-recovery-requested'
+// Enviar email usando EmailService
+```
+
+---
+
+### FASE 5: Testing MVP y Deploy - ❌ PENDIENTE (0%)
+
+| # | Tarea | Estado | Ubicación | Estimación |
+|---|-------|--------|-----------|------------|
+| 1 | Tests críticos Backend (Auth) | ❌ PENDIENTE | `backend/src/modules/auth/*.spec.ts` | 2-3 horas |
+| 2 | Tests críticos Frontend (Login/Register) | ❌ PENDIENTE | `frontend/src/paginas/**/*.test.tsx` | 2-3 horas |
+| 3 | Test de integración básico | ❌ PENDIENTE | `backend/test/auth.e2e-spec.ts` | 1-2 horas |
+| 4 | Configurar CI/CD básico | ❌ PENDIENTE | `.github/workflows/ci.yml` | 1-2 horas |
+| 5 | Scripts de build y deploy | ❌ PENDIENTE | `package.json scripts` | 1 hora |
+| 6 | Variables de entorno producción | ❌ PENDIENTE | `.env.production.example` | 30 minutos |
+
+**Testing MVP Simplificado:**
+- **Backend:** Solo endpoints críticos (auth module)
+- **Frontend:** Solo flujos principales (login, register, recover)  
+- **Integración:** Un test E2E del flujo completo (register → login → profile)
+- **Coverage mínimo:** >60% en componentes críticos
+
+**Framework de Testing Sugerido:**
+- **Backend:** Jest + Supertest (solo auth endpoints)
+- **Frontend:** Vitest + Testing Library (páginas críticas)
+- **E2E:** Un test con Playwright o Cypress
+- **Total estimado:** 7-11 horas
+
+**Criterios MVP para Deploy:**
+- ✅ Tests básicos pasan (login/register/logout)
+- ✅ Build sin errores (frontend + backend)
+- ✅ Variables de entorno configuradas
+- ✅ Un test E2E completo funciona
+- ✅ Deploy básico a producción exitoso
 
 ---
 
@@ -310,8 +430,8 @@ src/
 ```typescript
 {
   email: string;      // Email único
-  username: string;   // Username único
-  password: string;   // Mínimo 6 caracteres
+  username: string;   // Username único (3-30 caracteres)
+  password: string;   // Mínimo 4 caracteres
 }
 ```
 
@@ -522,12 +642,54 @@ npm run dev
 
 | Fase | Estado | Progreso | Tiempo Estimado Restante |
 |------|--------|----------|--------------------------|
-| FASE 1: Backend | ✅ COMPLETA | 100% | - |
-| FASE 2: Frontend | ✅ COMPLETA | 100% | - |
-| FASE 3: Infraestructura | ✅ COMPLETA | 100% | - |
+| FASE 1: Backend (Módulo Auth) | ✅ COMPLETA | 100% | - |
+| FASE 2: Frontend (Módulo Auth) | ✅ COMPLETA | 100% | - |
+| FASE 3: Infraestructura + BD Completa | ✅ COMPLETA | 100% | - |
 | FASE 4: Documentación | ❌ PENDIENTE | 0% | 2-3 horas |
+| FASE 4.1: Funcionalidades Pendientes | ❌ PENDIENTE | 0% | 4-6 horas |
+| FASE 5: Testing MVP y Deploy | ❌ PENDIENTE | 0% | 7-11 horas |
 
-**Estado General del Proyecto:** 75% completo (3 de 4 fases)
+**🎯 ALCANCE REAL DEL PROYECTO:**
+- **Base de Datos:** ✅ **ERP COMPLETO** (17 tablas para todos los módulos)
+- **Backend desarrollado:** ✅ **Solo módulo Auth** (de 5 módulos totales)
+- **Frontend desarrollado:** ✅ **Solo módulo Auth** (de 5 módulos totales)
+
+**📈 PROGRESO CORREGIDO:**
+- **Infraestructura:** 100% completa (BD lista para ERP completo)
+- **Desarrollo de módulos:** 20% completo (1 de 5 módulos implementados)
+- **Estado real:** 60% completo considerando solo módulo Auth MVP
+
+**Estado General del Proyecto:** 60% completo (3 de 5 fases)
+**Tiempo total restante estimado:** 13-20 horas (enfoque MVP)
+
+## 🚀 ROADMAP DE MÓDULOS FUTUROS
+
+**✅ MÓDULO IMPLEMENTADO:**
+1. **Autenticación** - Login, Register, Recover, Profile (100% funcional)
+
+**❌ MÓDULOS PENDIENTES (BD lista, falta desarrollo):**
+2. **Clientes** - CRUD, cuenta corriente, tipos (BD: 3 tablas listas)
+3. **Productos/Stock** - Catálogo, inventario, precios (BD: 5 tablas listas)  
+4. **Ventas** - Facturación, detalle, formas de pago (BD: 2 tablas listas)
+5. **Compras/Proveedores** - Órdenes, recepciones (BD: 5 tablas listas)
+
+**🎯 VENTAJA COMPETITIVA:**
+- ✅ **Base de datos ERP completa ya implementada**
+- ✅ **Arquitectura escalable establecida**
+- ✅ **Solo falta replicar patrón del módulo Auth**
+
+**⏱️ ESTIMACIÓN MÓDULOS FUTUROS:**
+- **Clientes:** 15-20 horas (CRUD + cuenta corriente)
+- **Productos:** 20-25 horas (catálogo + stock + precios)
+- **Ventas:** 25-30 horas (facturación + reportes)
+- **Compras:** 20-25 horas (órdenes + proveedores)
+
+**❌ FUNCIONALIDADES CRÍTICAS PENDIENTES (MVP ACTUAL):**
+1. ❌ RecoverPage no conectado al backend (línea TODO)
+2. ❌ Servicio de Email no implementado (contraseñas temporales)
+3. ❌ Event Listener faltante para password-recovery
+4. ❌ Testing completo del sistema (unitarios + integración + E2E)
+5. ❌ Configuración de CI/CD y deployment
 
 **✅ Completado en esta sesión:**
 1. ✅ Configuración de Supabase con credenciales correctas
@@ -535,6 +697,8 @@ npm run dev
 3. ✅ Solución de problema BigInt serialization
 4. ✅ Verificación completa de endpoints (register, login, profile)
 5. ✅ Sistema funcionando end-to-end
+6. ✅ Validación de contraseñas actualizada (4 caracteres mínimo)
+7. ✅ **Documentación actualizada con estructura real de BD**
 
 **Próxima Sesión:**
 1. Probar frontend con backend conectado
@@ -559,9 +723,12 @@ npm run dev
    - Implementar refresh tokens para seguridad mejorada
 
 2. **Recuperación de Contraseña:**
+   - ❌ **PENDIENTE:** Frontend no conectado al backend (TODO línea 36)
+   - ❌ **PENDIENTE:** Servicio de email no implementado (solo eventos)
+   - ❌ **PENDIENTE:** Event listener faltante para envío real de emails
+   - ✅ Lógica de backend implementada (genera contraseña temporal)
    - En desarrollo, devuelve contraseña temporal en respuesta
    - En producción, solo enviar por email (no devolver en API)
-   - Implementar servicio de email real (actualmente solo eventos)
 
 3. **Base de Datos:**
    - No hay migraciones ejecutadas aún
@@ -575,6 +742,7 @@ npm run dev
 
 ---
 
-**Documento generado:** 2025-11-07
-**Próxima revisión:** Después de completar FASE 3
+**Documento generado:** 2025-11-08
+**Última actualización:** 2025-11-08 (Agregadas Fases 4.1 y 5)
+**Próxima revisión:** Después de completar funcionalidades pendientes
 **Mantenido por:** Equipo de desarrollo ERP Los Hermanos

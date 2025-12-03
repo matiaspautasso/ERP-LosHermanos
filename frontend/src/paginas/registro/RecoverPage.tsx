@@ -11,12 +11,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/componentes/ui/alert-dialog';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function RecoverPage() {
   const navigate = useNavigate();
+  const { recover, recoverLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [showDialog, setShowDialog] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   const handleRecover = async () => {
     // Validación simple
@@ -30,25 +31,22 @@ export default function RecoverPage() {
       return;
     }
 
-    setLoading(true);
+    // Llamar al hook de recuperación
+    recover(
+      { email },
+      {
+        onSuccess: () => {
+          // Mostrar diálogo de confirmación
+          setShowDialog(true);
 
-    try {
-      // TODO: Conectar con el backend
-      console.log('Recuperación de cuenta para:', email);
-
-      // Mostrar diálogo de confirmación
-      setShowDialog(true);
-
-      // Cerrar diálogo automáticamente después de 3 segundos
-      setTimeout(() => {
-        setShowDialog(false);
-      }, 3000);
-    } catch (error) {
-      toast.error('Error al recuperar contraseña');
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
+          // Cerrar diálogo automáticamente después de 3 segundos
+          setTimeout(() => {
+            setShowDialog(false);
+            navigate('/login');
+          }, 3000);
+        },
+      }
+    );
   };
 
   return (
@@ -94,7 +92,7 @@ export default function RecoverPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   className="bg-transparent border-[#afa2c3] text-[#f1eef7] placeholder:text-[#afa2c3] rounded-lg h-14 focus-visible:ring-[#a03cea] focus-visible:ring-offset-0"
                   placeholder="correo@ejemplo.com"
-                  disabled={loading}
+                  disabled={recoverLoading}
                   onKeyDown={(e) => e.key === 'Enter' && handleRecover()}
                 />
               </div>
@@ -103,10 +101,10 @@ export default function RecoverPage() {
               <div className="pt-6">
                 <Button
                   onClick={handleRecover}
-                  disabled={loading}
+                  disabled={recoverLoading}
                   className="w-full h-14 bg-transparent border-[5px] border-[#f1eef7] text-[#f1eef7] hover:bg-[#f1eef7] hover:text-[#2c5b2d] rounded-lg transition-all"
                 >
-                  {loading ? 'Procesando...' : 'Recuperar cuenta'}
+                  {recoverLoading ? 'Procesando...' : 'Recuperar cuenta'}
                 </Button>
               </div>
             </div>
@@ -117,7 +115,7 @@ export default function RecoverPage() {
             <button
               onClick={() => navigate('/login')}
               className="text-white hover:text-[#fefbe4] transition-colors underline"
-              disabled={loading}
+              disabled={recoverLoading}
             >
               Volver
             </button>
