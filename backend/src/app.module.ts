@@ -5,6 +5,9 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './core/prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { ClientesModule } from './modules/clientes/clientes.module';
+import { ProductosModule } from './modules/productos/productos.module';
+import { VentasModule } from './modules/ventas/ventas.module';
 
 @Module({
   imports: [
@@ -30,6 +33,15 @@ import { AuthModule } from './modules/auth/auth.module';
 
     // Módulo de Autenticación
     AuthModule,
+
+    // Módulo de Clientes
+    ClientesModule,
+
+    // Módulo de Productos
+    ProductosModule,
+
+    // Módulo de Ventas
+    VentasModule,
   ],
   controllers: [AppController],
   providers: [AppService],
