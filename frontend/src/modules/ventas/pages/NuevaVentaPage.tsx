@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Plus, Trash2, DollarSign } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Plus, Trash2, DollarSign, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { BuscarProductoModal } from '../components/BuscarProductoModal';
@@ -14,18 +14,29 @@ interface ProductoVenta {
   stock_disponible: number;
 }
 
+type ListaPrecio = 'Minorista' | 'Mayorista' | 'Supermayorista';
+
 export default function NuevaVentaPage() {
   const [showBuscarProducto, setShowBuscarProducto] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingTipoVenta, setPendingTipoVenta] = useState<ListaPrecio | null>(null);
   const [productos, setProductos] = useState<ProductoVenta[]>([]);
   const [clienteId, setClienteId] = useState('');
-  const [tipoVenta, setTipoVenta] = useState<'Minorista' | 'Mayorista'>('Minorista');
+  const [tipoVenta, setTipoVenta] = useState<ListaPrecio>('Minorista');
+  const [listaPrecio, setListaPrecio] = useState<ListaPrecio>('Minorista');
   const [formaPago, setFormaPago] = useState<'Efectivo' | 'Tarjeta'>('Efectivo');
-  const [descuentoPorcentaje, setDescuentoPorcentaje] = useState(0);
+  const [descuentoPorcentaje, setDescuentoPorcentaje] = useState<number | string>(0);
+  const [isMostrador, setIsMostrador] = useState(false);
 
   const { data: clientes = [], isLoading: loadingClientes } = useClientes();
   const { createVenta, creandoVenta } = useVentas();
 
   const IVA_PORCENTAJE = 21;
+
+  // Sincronizar lista de precio con tipo de venta al inicio
+  useEffect(() => {
+    setListaPrecio(tipoVenta);
+  }, [tipoVenta]);
 
   const calcularSubtotal = (producto: ProductoVenta) => {
     return producto.precio_lista * producto.cantidad;
@@ -41,7 +52,8 @@ export default function NuevaVentaPage() {
       (sum, p) => sum + calcularSubtotal(p) + calcularIVA(p),
       0
     );
-    const descuentoMonto = (subtotal * descuentoPorcentaje) / 100;
+    const descuento = typeof descuentoPorcentaje === 'number' ? descuentoPorcentaje : parseFloat(descuentoPorcentaje) || 0;
+    const descuentoMonto = (subtotal * descuento) / 100;
     const total = subtotal - descuentoMonto;
 
     return {
@@ -56,7 +68,6 @@ export default function NuevaVentaPage() {
   };
 
   const agregarProducto = (producto: Producto) => {
-    // Verificar si el producto ya está en la lista
     const productoExistente = productos.find((p) => p.id === producto.id);
 
     if (productoExistente) {
@@ -91,8 +102,70 @@ export default function NuevaVentaPage() {
     );
   };
 
+  const handleClienteChange = (value: string) => {
+    setClienteId(value);
+
+    // Cliente especial "Mostrador"
+    if (value === 'MOSTRADOR') {
+      setTipoVenta('Minorista');
+      setListaPrecio('Minorista');
+      setIsMostrador(true);
+      return;
+    }
+
+    setIsMostrador(false);
+
+    // Autocompletar tipo de venta si el cliente incluye "minorista" en el nombre
+    if (value !== '') {
+      const clienteSeleccionado = clientes.find((c) => c.id === value);
+      if (clienteSeleccionado) {
+        const nombreCompleto = `${clienteSeleccionado.nombre} ${clienteSeleccionado.apellido}`.toLowerCase();
+        if (nombreCompleto.includes('minorista')) {
+          setTipoVenta('Minorista');
+          setListaPrecio('Minorista');
+        }
+      }
+    }
+  };
+
+  const handleTipoVentaChange = (newTipo: ListaPrecio) => {
+    // Si hay productos agregados, mostrar modal de confirmación
+    if (productos.length > 0) {
+      setPendingTipoVenta(newTipo);
+      setShowConfirmModal(true);
+    } else {
+      setTipoVenta(newTipo);
+      setListaPrecio(newTipo);
+    }
+  };
+
+  const confirmarCambioTipoVenta = () => {
+    if (pendingTipoVenta) {
+      setProductos([]);
+      setTipoVenta(pendingTipoVenta);
+      setListaPrecio(pendingTipoVenta);
+      setPendingTipoVenta(null);
+    }
+    setShowConfirmModal(false);
+  };
+
+  const cancelarCambioTipoVenta = () => {
+    setPendingTipoVenta(null);
+    setShowConfirmModal(false);
+  };
+
+  const handleDescuentoChange = (value: string) => {
+    if (value === '') {
+      setDescuentoPorcentaje('');
+      return;
+    }
+    const num = parseFloat(value);
+    if (!isNaN(num) && num >= 0 && num <= 100) {
+      setDescuentoPorcentaje(num);
+    }
+  };
+
   const handleConfirmarVenta = () => {
-    // Validaciones
     if (!clienteId) {
       toast.error('Debes seleccionar un cliente');
       return;
@@ -103,12 +176,13 @@ export default function NuevaVentaPage() {
       return;
     }
 
-    // Crear la venta
+    const descuento = typeof descuentoPorcentaje === 'number' ? descuentoPorcentaje : parseFloat(descuentoPorcentaje) || 0;
+
     createVenta({
-      cliente_id: clienteId,
-      tipo_venta: tipoVenta,
+      cliente_id: clienteId === 'MOSTRADOR' ? '0' : clienteId,
+      tipo_venta: listaPrecio,
       forma_pago: formaPago,
-      descuento_porcentaje: descuentoPorcentaje,
+      descuento_porcentaje: descuento,
       items: productos.map((p) => ({
         producto_id: p.id,
         cantidad: p.cantidad,
@@ -136,7 +210,7 @@ export default function NuevaVentaPage() {
               </label>
               <select
                 value={clienteId}
-                onChange={(e) => setClienteId(e.target.value)}
+                onChange={(e) => handleClienteChange(e.target.value)}
                 disabled={loadingClientes}
                 className="w-full px-4 py-2.5 rounded-lg bg-transparent border-[2px] outline-none transition-all"
                 style={{
@@ -155,6 +229,9 @@ export default function NuevaVentaPage() {
                 <option value="" style={{ background: '#2c5b2d' }}>
                   Seleccionar cliente...
                 </option>
+                <option value="MOSTRADOR" style={{ background: '#2c5b2d', fontWeight: 'bold' }}>
+                  Mostrador
+                </option>
                 {clientes.map((cliente) => (
                   <option key={cliente.id} value={cliente.id} style={{ background: '#2c5b2d' }}>
                     {cliente.nombre} {cliente.apellido} - {cliente.tipo}
@@ -165,20 +242,25 @@ export default function NuevaVentaPage() {
 
             <div>
               <label className="block mb-2" style={{ color: '#f1eef7' }}>
-                <span className="md:hidden">Tipo</span>
-                <span className="hidden md:inline">Tipo de Venta</span>
+                <span className="md:hidden">Lista</span>
+                <span className="hidden md:inline">Lista de Precios</span>
               </label>
               <select
-                value={tipoVenta}
-                onChange={(e) => setTipoVenta(e.target.value as 'Minorista' | 'Mayorista')}
+                value={listaPrecio}
+                onChange={(e) => handleTipoVentaChange(e.target.value as ListaPrecio)}
+                disabled={isMostrador}
                 className="w-full px-4 py-2.5 rounded-lg bg-transparent border-[2px] outline-none transition-all"
                 style={{
                   borderColor: '#afa2c3',
                   color: '#f1eef7',
+                  opacity: isMostrador ? 0.6 : 1,
+                  cursor: isMostrador ? 'not-allowed' : 'pointer',
                 }}
                 onFocus={(e) => {
-                  e.currentTarget.style.borderColor = '#a03cea';
-                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(160, 60, 234, 0.2)';
+                  if (!isMostrador) {
+                    e.currentTarget.style.borderColor = '#a03cea';
+                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(160, 60, 234, 0.2)';
+                  }
                 }}
                 onBlur={(e) => {
                   e.currentTarget.style.borderColor = '#afa2c3';
@@ -186,10 +268,13 @@ export default function NuevaVentaPage() {
                 }}
               >
                 <option value="Minorista" style={{ background: '#2c5b2d' }}>
-                  Minorista
+                  Min. (Minorista)
                 </option>
                 <option value="Mayorista" style={{ background: '#2c5b2d' }}>
-                  Mayorista
+                  May. (Mayorista)
+                </option>
+                <option value="Supermayorista" style={{ background: '#2c5b2d' }}>
+                  Supmay. (Supermayorista)
                 </option>
               </select>
             </div>
@@ -199,7 +284,14 @@ export default function NuevaVentaPage() {
         {/* Tabla de productos */}
         <div className="bg-[rgba(44,91,45,0.5)] border-[5px] border-black rounded-lg p-6 mb-6">
           <div className="flex justify-between items-center mb-4">
-            <h3 style={{ color: '#fefbe4' }}>
+            <h3
+              className="pl-2"
+              style={{
+                color: '#fefbe4',
+                borderLeft: '4px solid rgb(136, 21, 19)',
+                paddingLeft: '8px'
+              }}
+            >
               <span className="md:hidden">Productos</span>
               <span className="hidden md:inline">Productos de la Venta</span>
             </h3>
@@ -231,7 +323,7 @@ export default function NuevaVentaPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b-[3px]" style={{ borderColor: '#000' }}>
+                  <tr style={{ borderBottom: '2px solid rgb(136, 21, 19)' }}>
                     <th className="text-left py-3 px-4" style={{ color: '#fefbe4' }}>
                       <span className="md:hidden">Prod</span>
                       <span className="hidden md:inline">Producto</span>
@@ -261,8 +353,7 @@ export default function NuevaVentaPage() {
                   {productos.map((producto) => (
                     <tr
                       key={producto.id}
-                      className="border-b-[2px]"
-                      style={{ borderColor: 'rgba(175, 162, 195, 0.3)' }}
+                      style={{ borderBottom: '1px solid rgba(136, 21, 19, 0.15)' }}
                     >
                       <td className="py-3 px-4" style={{ color: '#f1eef7' }}>
                         {producto.nombre}
@@ -279,10 +370,18 @@ export default function NuevaVentaPage() {
                           }
                           min="1"
                           max={producto.stock_disponible}
-                          className="w-20 px-2 py-1 rounded bg-transparent border-[2px] outline-none"
+                          className="w-20 px-2 py-1 rounded bg-transparent border outline-none transition-all"
                           style={{
                             borderColor: '#afa2c3',
                             color: '#f1eef7',
+                          }}
+                          onFocus={(e) => {
+                            e.currentTarget.style.border = '1px solid rgba(136, 21, 19, 0.5)';
+                            e.currentTarget.style.boxShadow = '0 0 6px rgba(136, 21, 19, 0.4)';
+                          }}
+                          onBlur={(e) => {
+                            e.currentTarget.style.border = '1px solid #afa2c3';
+                            e.currentTarget.style.boxShadow = 'none';
                           }}
                         />
                       </td>
@@ -327,9 +426,10 @@ export default function NuevaVentaPage() {
                 <input
                   type="number"
                   value={descuentoPorcentaje}
-                  onChange={(e) => setDescuentoPorcentaje(parseFloat(e.target.value) || 0)}
+                  onChange={(e) => handleDescuentoChange(e.target.value)}
                   min="0"
                   max="100"
+                  placeholder="0"
                   className="w-full px-4 py-2.5 rounded-lg bg-transparent border-[2px] outline-none transition-all"
                   style={{
                     borderColor: '#afa2c3',
@@ -342,6 +442,9 @@ export default function NuevaVentaPage() {
                   onBlur={(e) => {
                     e.currentTarget.style.borderColor = '#afa2c3';
                     e.currentTarget.style.boxShadow = 'none';
+                    if (e.target.value === '') {
+                      setDescuentoPorcentaje(0);
+                    }
                   }}
                 />
               </div>
@@ -456,6 +559,58 @@ export default function NuevaVentaPage() {
               setShowBuscarProducto(false);
             }}
           />
+        )}
+
+        {/* Modal de Confirmación de Cambio de Tipo de Venta */}
+        {showConfirmModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-[#2c5b2d] border-4 border-black rounded-lg p-6 max-w-md w-full mx-4">
+              <div className="flex items-center gap-3 mb-4">
+                <AlertTriangle size={32} style={{ color: '#FB6564' }} />
+                <h3 className="text-xl font-bold" style={{ color: '#fefbe4' }}>
+                  Advertencia
+                </h3>
+              </div>
+              <p className="mb-6" style={{ color: '#f1eef7' }}>
+                Cambiar la lista de precios eliminará los artículos cargados. ¿Confirmar?
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={cancelarCambioTipoVenta}
+                  className="flex-1 px-4 py-2 rounded-lg border-2 transition-all"
+                  style={{
+                    borderColor: '#afa2c3',
+                    color: '#f1eef7',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#a03cea';
+                    e.currentTarget.style.backgroundColor = 'rgba(160, 60, 234, 0.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = '#afa2c3';
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={confirmarCambioTipoVenta}
+                  className="flex-1 px-4 py-2 rounded-lg transition-all text-white"
+                  style={{
+                    background: 'linear-gradient(135deg, #FB6564 0%, #A03CEA 100%)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #fa4a49 0%, #8f2bd1 100%)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #FB6564 0%, #A03CEA 100%)';
+                  }}
+                >
+                  Confirmar
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </DashboardLayout>

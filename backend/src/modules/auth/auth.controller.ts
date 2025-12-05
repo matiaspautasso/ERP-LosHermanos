@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { LoginDto, RegisterDto, RecoverDto } from './dto';
+import { LoginDto, RegisterDto, RecoverDto, ChangePasswordDto } from './dto';
 import { GetUser } from '../../shared/decorators/get-user.decorator';
 
 @ApiTags('auth')
@@ -150,5 +150,24 @@ export class AuthController {
     }
 
     return this.authService.getProfile(user.id);
+  }
+
+  @Post('change-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Cambiar contraseña del usuario' })
+  @ApiBody({ type: ChangePasswordDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Contraseña actualizada exitosamente',
+    schema: {
+      example: {
+        message: 'Contraseña actualizada exitosamente',
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Contraseña actual incorrecta' })
+  @ApiResponse({ status: 400, description: 'Datos de entrada inválidos' })
+  async changePassword(@Body() changePasswordDto: ChangePasswordDto) {
+    return this.authService.changePassword(changePasswordDto);
   }
 }

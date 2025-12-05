@@ -31,7 +31,12 @@
       "Bash(done)",
       "Bash(timeout /t 5)",
       "Bash(git checkout:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(node check-users.js:*)",
+      "Bash(dir:*)",
+      "Bash(npm run prisma:seed:*)",
+      "Bash(node activate-user.js:*)",
+      "Bash(node -e:*)"
     ],
     "deny": [],
     "ask": []

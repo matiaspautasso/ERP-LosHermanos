@@ -23,11 +23,11 @@ export class CreateVentaDto {
   @ApiProperty({
     description: 'Tipo de venta',
     example: 'Minorista',
-    enum: ['Minorista', 'Mayorista'],
+    enum: ['Minorista', 'Mayorista', 'Supermayorista'],
   })
   @IsString()
-  @IsIn(['Minorista', 'Mayorista'], {
-    message: 'El tipo de venta debe ser Minorista o Mayorista',
+  @IsIn(['Minorista', 'Mayorista', 'Supermayorista'], {
+    message: 'El tipo de venta debe ser Minorista, Mayorista o Supermayorista',
   })
   tipo_venta: string;
 

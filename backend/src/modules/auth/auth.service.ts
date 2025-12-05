@@ -8,7 +8,7 @@ import {
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../core/prisma/prisma.service';
-import { LoginDto, RegisterDto, RecoverDto } from './dto';
+import { LoginDto, RegisterDto, RecoverDto, ChangePasswordDto } from './dto';
 import {
   UserRegisteredEvent,
   UserLoggedInEvent,
@@ -205,6 +205,46 @@ export class AuthService {
 
     return {
       message: 'Sesión cerrada exitosamente',
+    };
+  }
+
+  /**
+   * Cambiar contraseña del usuario
+   */
+  async changePassword(changePasswordDto: ChangePasswordDto) {
+    const { emailOrUsername, currentPassword, newPassword } = changePasswordDto;
+
+    // Buscar usuario por email o username
+    const user = await this.prisma.user.findFirst({
+      where: {
+        OR: [{ email: emailOrUsername }, { username: emailOrUsername }],
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Credenciales incorrectas');
+    }
+
+    // Verificar contraseña actual
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Contraseña actual incorrecta');
+    }
+
+    // Encriptar nueva contraseña
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    // Actualizar contraseña
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashedNewPassword },
+    });
+
+    this.logger.log(`Usuario ${user.username} cambió su contraseña`);
+
+    return {
+      message: 'Contraseña actualizada exitosamente',
     };
   }
 
