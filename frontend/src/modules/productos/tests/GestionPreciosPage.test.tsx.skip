@@ -1,0 +1,327 @@
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter } from 'react-router-dom';
+import { vi } from 'vitest';
+import GestionPreciosPage from '../pages/GestionPreciosPage';
+import * as useProductos from '../hooks/useProductos';
+
+// Mock del hook useProductos
+const mockUseProductos = vi.spyOn(useProductos, 'useProductos');
+
+const mockProducts = [
+  { 
+    id: 1, 
+    nombre: 'Producto A', 
+    precio_lista: 100,
+    categoria: { nombre: 'Categoria 1' },
+    stock_actual: 10
+  },
+  { 
+    id: 2, 
+    nombre: 'Producto B', 
+    precio_lista: 200,
+    categoria: { nombre: 'Categoria 2' },
+    stock_actual: 5
+  },
+  { 
+    id: 3, 
+    nombre: 'Producto C', 
+    precio_lista: 300,
+    categoria: { nombre: 'Categoria 1' },
+    stock_actual: 0
+  }
+];
+
+const TestWrapper = ({ children }: { children: React.ReactNode }) => {
+  const queryClient = new QueryClient({
+    defaultOptions: { 
+      queries: { retry: false },
+      mutations: { retry: false }
+    }
+  });
+  
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <div className="min-h-screen bg-[#2c5b2d]">
+          {children}
+        </div>
+      </BrowserRouter>
+    </QueryClientProvider>
+  );
+};
+
+describe('GestionPreciosPage Integration', () => {
+  const mockUpdatePrice = {
+    mutateAsync: vi.fn(),
+    isPending: false
+  };
+
+  const mockMassUpdatePrices = {
+    mutateAsync: vi.fn(),
+    isPending: false
+  };
+
+  beforeEach(() => {
+    mockUseProductos.mockReturnValue({
+      productos: mockProducts,
+      isLoading: false,
+      isError: false,
+      updatePrice: mockUpdatePrice,
+      massUpdatePrices: mockMassUpdatePrices,
+      isUpdating: false
+    } as any);
+    
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.resetAllMocks();
+  });
+
+  it('should render correctly with products', async () => {
+    render(
+      <TestWrapper>
+        <GestionPreciosPage />
+      </TestWrapper>
+    );
+
+    expect(screen.getByText('Gestión de Precios')).toBeInTheDocument();
+    expect(screen.getByText('Ajuste Masivo')).toBeInTheDocument();
+    
+    await waitFor(() => {
+      expect(screen.getByText('Producto A')).toBeInTheDocument();
+      expect(screen.getByText('Producto B')).toBeInTheDocument();
+      expect(screen.getByText('Producto C')).toBeInTheDocument();
+    });
+  });
+
+  it('should show loading state', () => {
+    mockUseProductos.mockReturnValue({
+      productos: [],
+      isLoading: true,
+      isError: false,
+      updatePrice: mockUpdatePrice,
+      massUpdatePrices: mockMassUpdatePrices,
+      isUpdating: false
+    } as any);
+
+    render(
+      <TestWrapper>
+        <GestionPreciosPage />
+      </TestWrapper>
+    );
+
+    expect(screen.getByText('Cargando productos...')).toBeInTheDocument();
+  });
+
+  it('should show error state', () => {
+    mockUseProductos.mockReturnValue({
+      productos: [],
+      isLoading: false,
+      isError: true,
+      updatePrice: mockUpdatePrice,
+      massUpdatePrices: mockMassUpdatePrices,
+      isUpdating: false
+    } as any);
+
+    render(
+      <TestWrapper>
+        <GestionPreciosPage />
+      </TestWrapper>
+    );
+
+    expect(screen.getByText('Error al cargar productos')).toBeInTheDocument();
+  });
+
+  it('should open mass adjustment modal when clicking button', async () => {
+    render(
+      <TestWrapper>
+        <GestionPreciosPage />
+      </TestWrapper>
+    );
+
+    const massAdjustmentButton = screen.getByText('Ajuste Masivo');
+    fireEvent.click(massAdjustmentButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('Ajuste Masivo de Precios')).toBeInTheDocument();
+    });
+  });
+
+  it('should filter products by search term', async () => {
+    render(
+      <TestWrapper>
+        <GestionPreciosPage />
+      </TestWrapper>
+    );
+
+    const searchInput = screen.getByPlaceholderText(/Buscar productos/i);
+    fireEvent.change(searchInput, { target: { value: 'Producto A' } });
+
+    await waitFor(() => {
+      expect(screen.getByText('Producto A')).toBeInTheDocument();
+      expect(screen.queryByText('Producto B')).not.toBeInTheDocument();
+      expect(screen.queryByText('Producto C')).not.toBeInTheDocument();
+    });
+  });
+
+  it('should update individual product price', async () => {
+    render(
+      <TestWrapper>
+        <GestionPreciosPage />
+      </TestWrapper>
+    );
+
+    // Find price input for first product
+    const priceInputs = screen.getAllByDisplayValue(/100|200|300/);
+    const firstPriceInput = priceInputs[0];
+    
+    // Change price
+    fireEvent.change(firstPriceInput, { target: { value: '150' } });
+    fireEvent.blur(firstPriceInput);
+
+    await waitFor(() => {
+      expect(mockUpdatePrice.mutateAsync).toHaveBeenCalledWith({
+        id: 1,
+        precio: 150
+      });
+    });
+  });
+
+  it('should show success message after mass update', async () => {
+    render(
+      <TestWrapper>
+        <GestionPreciosPage />
+      </TestWrapper>
+    );
+
+    // Open modal
+    fireEvent.click(screen.getByText('Ajuste Masivo'));
+    
+    await waitFor(() => {
+      expect(screen.getByText('Ajuste Masivo de Precios')).toBeInTheDocument();
+    });
+
+    // Select all products and add adjustment
+    fireEvent.click(screen.getByText('Seleccionar Todo'));
+    
+    const valueInput = screen.getByPlaceholderText('10');
+    fireEvent.change(valueInput, { target: { value: '10' } });
+
+    // Apply adjustment
+    const applyButton = screen.getByText(/Aplicar Ajuste \(3\)/);
+    fireEvent.click(applyButton);
+
+    await waitFor(() => {
+      expect(mockMassUpdatePrices.mutateAsync).toHaveBeenCalled();
+    });
+  });
+
+  it('should display product categories correctly', async () => {
+    render(
+      <TestWrapper>
+        <GestionPreciosPage />
+      </TestWrapper>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Categoria 1')).toBeInTheDocument();
+      expect(screen.getByText('Categoria 2')).toBeInTheDocument();
+    });
+  });
+
+  it('should show stock levels', async () => {
+    render(
+      <TestWrapper>
+        <GestionPreciosPage />
+      </TestWrapper>
+    );
+
+    await waitFor(() => {
+      // Should show stock levels for products
+      expect(screen.getByText('Stock: 10')).toBeInTheDocument();
+      expect(screen.getByText('Stock: 5')).toBeInTheDocument();
+      expect(screen.getByText('Stock: 0')).toBeInTheDocument();
+    });
+  });
+
+  it('should highlight products with low/no stock', async () => {
+    render(
+      <TestWrapper>
+        <GestionPreciosPage />
+      </TestWrapper>
+    );
+
+    await waitFor(() => {
+      // Product with 0 stock should have special styling
+      const outOfStockElement = screen.getByText('Stock: 0');
+      expect(outOfStockElement).toHaveClass('text-red-400');
+    });
+  });
+
+  it('should handle keyboard navigation in price inputs', async () => {
+    render(
+      <TestWrapper>
+        <GestionPreciosPage />
+      </TestWrapper>
+    );
+
+    const priceInputs = screen.getAllByDisplayValue(/100|200|300/);
+    const firstPriceInput = priceInputs[0];
+    
+    // Focus on input and press Enter
+    fireEvent.focus(firstPriceInput);
+    fireEvent.change(firstPriceInput, { target: { value: '120' } });
+    fireEvent.keyDown(firstPriceInput, { key: 'Enter' });
+
+    await waitFor(() => {
+      expect(mockUpdatePrice.mutateAsync).toHaveBeenCalledWith({
+        id: 1,
+        precio: 120
+      });
+    });
+  });
+
+  it('should validate price inputs', async () => {
+    render(
+      <TestWrapper>
+        <GestionPreciosPage />
+      </TestWrapper>
+    );
+
+    const priceInputs = screen.getAllByDisplayValue(/100|200|300/);
+    const firstPriceInput = priceInputs[0];
+    
+    // Try to enter negative price
+    fireEvent.change(firstPriceInput, { target: { value: '-50' } });
+    fireEvent.blur(firstPriceInput);
+
+    // Should not call update with negative price
+    await waitFor(() => {
+      expect(mockUpdatePrice.mutateAsync).not.toHaveBeenCalled();
+    });
+  });
+
+  it('should sort products by price', async () => {
+    render(
+      <TestWrapper>
+        <GestionPreciosPage />
+      </TestWrapper>
+    );
+
+    // Find and click sort button if exists
+    const sortButton = screen.queryByText(/Ordenar por precio/i);
+    if (sortButton) {
+      fireEvent.click(sortButton);
+      
+      await waitFor(() => {
+        const productElements = screen.getAllByText(/Producto [ABC]/);
+        // Should be sorted by price (A: $100, B: $200, C: $300)
+        expect(productElements[0]).toHaveTextContent('Producto A');
+        expect(productElements[1]).toHaveTextContent('Producto B');
+        expect(productElements[2]).toHaveTextContent('Producto C');
+      });
+    }
+  });
+});

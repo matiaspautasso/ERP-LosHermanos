@@ -1,4 +1,4 @@
-import { Package, ShoppingCart, Users, TrendingUp, ChevronDown, ChevronRight, LogOut, FileText } from 'lucide-react';
+import { Package, ShoppingCart, Users, TrendingUp, ChevronDown, ChevronRight, LogOut, FileText, DollarSign } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@modules/auth/hooks/useAuth';
@@ -38,6 +38,18 @@ export function Sidebar() {
         >
           <Package size={16} className="md:w-5 md:h-5 flex-shrink-0" style={{ color: isActive('/stock') ? '#fefbe4' : '#B2A6C5' }} />
           <span className="text-xs md:text-base text-left leading-tight">Stock</span>
+        </button>
+
+        {/* Gestión de Precios */}
+        <button
+          onClick={() => navigate('/gestion-precios')}
+          className={`w-full px-0.5 pr-1 md:px-6 py-2 md:py-3 mb-1.5 md:mb-3 flex items-center gap-0.5 md:gap-3 transition-all ${
+            isActive('/gestion-precios') ? 'bg-[rgba(160,60,234,0.2)] border-l-4 border-[#a03cea]' : 'hover:bg-[rgba(255,255,255,0.05)]'
+          }`}
+          style={{ color: isActive('/gestion-precios') ? '#fefbe4' : '#f1eef7' }}
+        >
+          <DollarSign size={16} className="md:w-5 md:h-5 flex-shrink-0" style={{ color: isActive('/gestion-precios') ? '#fefbe4' : '#B2A6C5' }} />
+          <span className="text-xs md:text-base text-left leading-tight">Precios</span>
         </button>
 
         {/* Ventas (expandible) */}

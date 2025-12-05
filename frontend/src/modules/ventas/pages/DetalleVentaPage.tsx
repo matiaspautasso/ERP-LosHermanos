@@ -142,13 +142,13 @@ export default function DetalleVentaPage() {
                       {item.cantidad}
                     </td>
                     <td className="py-3 px-4" style={{ color: '#f1eef7' }}>
-                      ${item.precio_unitario.toFixed(2)}
+                      ${Number(item.precio_unitario).toFixed(2)}
                     </td>
                     <td className="py-3 px-4" style={{ color: '#f1eef7' }}>
-                      {item.iva_porcentaje}%
+                      {Number(item.iva_porcentaje)}%
                     </td>
                     <td className="py-3 px-4" style={{ color: '#f1eef7' }}>
-                      ${item.subtotal.toFixed(2)}
+                      ${Number(item.subtotal).toFixed(2)}
                     </td>
                   </tr>
                 ))}
@@ -167,7 +167,7 @@ export default function DetalleVentaPage() {
             <div className="flex justify-between">
               <span style={{ color: '#f1eef7' }}>Descuento:</span>
               <span style={{ color: '#f1eef7' }}>
-                ${venta.descuento.toFixed(2)}
+                ${Number(venta.descuento).toFixed(2)}
               </span>
             </div>
 
@@ -183,7 +183,7 @@ export default function DetalleVentaPage() {
                     textShadow: '0 2px 4px rgba(0,0,0,0.25)',
                   }}
                 >
-                  ${venta.total.toFixed(2)}
+                  ${Number(venta.total).toFixed(2)}
                 </span>
               </div>
             </div>

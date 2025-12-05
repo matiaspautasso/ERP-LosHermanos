@@ -158,7 +158,7 @@ export class VentasService {
           data: {
             producto_id: item.producto_id,
             tipo_operacion: 'Egreso',
-            motivo: 'Venta',
+            motivo: 'Otros',
             cantidad: new Decimal(item.cantidad),
             observaciones: `Venta #${nuevaVenta.id}`,
             usuario_id: usuarioId,

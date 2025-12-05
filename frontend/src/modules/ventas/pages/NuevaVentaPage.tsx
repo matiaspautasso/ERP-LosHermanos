@@ -69,9 +69,9 @@ export default function NuevaVentaPage() {
       {
         id: producto.id,
         nombre: producto.nombre,
-        precio_lista: producto.precio_lista,
+        precio_lista: Number(producto.precio_lista),
         cantidad: 1,
-        stock_disponible: producto.stock_actual,
+        stock_disponible: Number(producto.stock_actual),
       },
     ]);
   };
@@ -268,7 +268,7 @@ export default function NuevaVentaPage() {
                         {producto.nombre}
                       </td>
                       <td className="py-3 px-4" style={{ color: '#f1eef7' }}>
-                        ${producto.precio_lista.toFixed(2)}
+                        ${Number(producto.precio_lista).toFixed(2)}
                       </td>
                       <td className="py-3 px-4">
                         <input

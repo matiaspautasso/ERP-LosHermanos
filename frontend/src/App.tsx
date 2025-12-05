@@ -7,6 +7,7 @@ import RecoverPage from './modules/auth/pages/RecoverPage';
 import NuevaVentaPage from './modules/ventas/pages/NuevaVentaPage';
 import ListaVentasPage from './modules/ventas/pages/ListaVentasPage';
 import DetalleVentaPage from './modules/ventas/pages/DetalleVentaPage';
+import GestionPreciosPage from './modules/ventas/pages/GestionPreciosPage';
 import { ProtectedRoute } from '@core/routes/ProtectedRoute';
 import { useAuthStore } from '@core/store/authStore';
 
@@ -51,6 +52,16 @@ function AppRoutes() {
               <Route path="lista" element={<ListaVentasPage />} />
               <Route path=":id" element={<DetalleVentaPage />} />
             </Routes>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Rutas protegidas - Gestión de Stock */}
+      <Route
+        path="/gestion-precios"
+        element={
+          <ProtectedRoute>
+            <GestionPreciosPage />
           </ProtectedRoute>
         }
       />

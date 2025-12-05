@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Eye } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { useVentasList } from '../hooks/useVentas';
@@ -175,7 +175,7 @@ export default function ListaVentasPage() {
                         {venta.cliente}
                       </td>
                       <td className="py-3 px-8" style={{ color: '#4ade80' }}>
-                        ${venta.total.toFixed(2)}
+                        ${Number(venta.total).toFixed(2)}
                       </td>
                       <td className="py-3 px-8">
                         <span

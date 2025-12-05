@@ -107,3 +107,43 @@ export interface VentaFilters {
   cliente_id?: string;
   tipo_venta?: string;
 }
+
+// ===== GESTIÓN DE PRECIOS =====
+export interface ProductoConPrecios {
+  id: string;
+  nombre: string;
+  precio_lista: number;
+  categoria: string;
+  categoria_id: string;
+  precio_minorista: number;
+  precio_mayorista: number;
+  tiene_precios_configurados: boolean;
+}
+
+export interface UpdatePrecioRequest {
+  precio_minorista: number;
+  precio_mayorista: number;
+}
+
+export interface UpdatePrecioResponse {
+  message: string;
+  precio: {
+    id: string;
+    producto_id: string;
+    precio_minorista: number;
+    precio_mayorista: number;
+  };
+}
+
+export type TipoPrecio = 'minorista' | 'mayorista' | 'ambos';
+
+export interface AjusteMasivoRequest {
+  producto_ids: number[];
+  porcentaje: number;
+  tipo: TipoPrecio;
+}
+
+export interface AjusteMasivoResponse {
+  message: string;
+  productos_actualizados: number;
+}

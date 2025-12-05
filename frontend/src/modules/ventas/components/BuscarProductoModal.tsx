@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Search } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useProductos, useCategorias } from '../hooks/useVentas';
 import { Producto } from '../api/types';
 
@@ -174,15 +174,15 @@ export function BuscarProductoModal({ onClose, onSelect }: BuscarProductoModalPr
                         {producto.unidades.nombre}
                       </td>
                       <td className="py-3 px-4" style={{ color: '#f1eef7' }}>
-                        ${producto.precio_lista.toFixed(2)}
+                        ${Number(producto.precio_lista).toFixed(2)}
                       </td>
                       <td
                         className="py-3 px-4"
                         style={{
-                          color: producto.stock_actual > producto.stock_minimo ? '#4ade80' : '#FB6564',
+                          color: Number(producto.stock_actual) > Number(producto.stock_minimo) ? '#4ade80' : '#FB6564',
                         }}
                       >
-                        {producto.stock_actual}
+                        {Number(producto.stock_actual)}
                       </td>
                       <td className="py-3 px-4">
                         <button
