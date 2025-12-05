@@ -182,7 +182,7 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* Recordarme y Olvidaste Contraseña / Cambiar Contraseña */}
+            {/* Recordarme y Olvidaste Contraseña */}
             <div className="flex items-center justify-between">
               {!showChangePassword && (
                 <div className="flex items-center space-x-2">
@@ -201,20 +201,15 @@ export default function LoginPage() {
                   </label>
                 </div>
               )}
-              <button
-                onClick={() => {
-                  if (showChangePassword) {
-                    setShowChangePassword(false);
-                    setNewPassword('');
-                  } else {
-                    navigate('/recover');
-                  }
-                }}
-                className="text-[#f1eef7] underline hover:text-[#fefbe4] transition-colors"
-                disabled={loginLoading || changingPassword}
-              >
-                {showChangePassword ? 'Volver al login' : '¿olvidaste tu contraseña?'}
-              </button>
+              {!showChangePassword && (
+                <button
+                  onClick={() => navigate('/recover')}
+                  className="text-[#f1eef7] text-sm underline hover:text-[#fefbe4] transition-colors"
+                  disabled={loginLoading}
+                >
+                  ¿olvidaste tu contraseña?
+                </button>
+              )}
             </div>
 
             {/* Botones */}
@@ -247,16 +242,29 @@ export default function LoginPage() {
                     {loginLoading ? 'Cargando...' : 'Ingresar'}
                   </Button>
                   <Button
-                    onClick={() => setShowChangePassword(true)}
+                    onClick={() => navigate('/register')}
                     variant="outline"
                     disabled={loginLoading}
                     className="flex-1 h-14 bg-transparent border-2 border-[#f1eef7] text-[#f1eef7] hover:bg-[#f1eef7] hover:text-[#2c5b2d] rounded-lg transition-all"
                   >
-                    Cambiar Clave
+                    Registrarse
                   </Button>
                 </>
               )}
             </div>
+
+            {/* Enlace Cambiar Clave */}
+            {!showChangePassword && (
+              <div className="text-center mt-4">
+                <button
+                  onClick={() => setShowChangePassword(true)}
+                  className="text-[#f1eef7] text-sm underline hover:text-[#fefbe4] transition-colors"
+                  disabled={loginLoading}
+                >
+                  Cambiar clave
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
