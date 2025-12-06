@@ -75,13 +75,16 @@ export class VentasService {
       // Obtener precio según tipo de venta
       let precioUnitario = Number(producto.precio_lista);
 
-      // Si hay precios configurados (minorista/mayorista), usar esos
+      // Si hay precios configurados (minorista/mayorista/supermayorista), usar esos
       if (producto.precios && producto.precios.length > 0) {
         const precio = producto.precios[0];
-        precioUnitario =
-          tipo_venta === 'Mayorista'
-            ? Number(precio.precio_mayorista)
-            : Number(precio.precio_minorista);
+        if (tipo_venta === 'Supermayorista') {
+          precioUnitario = Number(precio.precio_supermayorista || precio.precio_mayorista);
+        } else if (tipo_venta === 'Mayorista') {
+          precioUnitario = Number(precio.precio_mayorista);
+        } else {
+          precioUnitario = Number(precio.precio_minorista);
+        }
       }
 
       const subtotal = precioUnitario * item.cantidad;

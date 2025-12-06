@@ -18,7 +18,7 @@ export default function NuevaVentaPage() {
   const [showBuscarProducto, setShowBuscarProducto] = useState(false);
   const [productos, setProductos] = useState<ProductoVenta[]>([]);
   const [clienteId, setClienteId] = useState('');
-  const [tipoVenta, setTipoVenta] = useState<'Minorista' | 'Mayorista'>('Minorista');
+  const [tipoVenta, setTipoVenta] = useState<'Minorista' | 'Mayorista' | 'Supermayorista'>('Minorista');
   const [formaPago, setFormaPago] = useState<'Efectivo' | 'Tarjeta'>('Efectivo');
   const [descuentoPorcentaje, setDescuentoPorcentaje] = useState(0);
 
@@ -136,7 +136,18 @@ export default function NuevaVentaPage() {
               </label>
               <select
                 value={clienteId}
-                onChange={(e) => setClienteId(e.target.value)}
+                onChange={(e) => {
+                  const selectedId = e.target.value;
+                  setClienteId(selectedId);
+                  
+                  // Auto-asignar tipo de venta según el tipo de cliente
+                  if (selectedId) {
+                    const cliente = clientes.find(c => c.id === selectedId);
+                    if (cliente) {
+                      setTipoVenta(cliente.tipo as 'Minorista' | 'Mayorista' | 'Supermayorista');
+                    }
+                  }
+                }}
                 disabled={loadingClientes}
                 className="w-full px-4 py-2.5 rounded-lg bg-transparent border-[2px] outline-none transition-all"
                 style={{
@@ -170,7 +181,7 @@ export default function NuevaVentaPage() {
               </label>
               <select
                 value={tipoVenta}
-                onChange={(e) => setTipoVenta(e.target.value as 'Minorista' | 'Mayorista')}
+                onChange={(e) => setTipoVenta(e.target.value as 'Minorista' | 'Mayorista' | 'Supermayorista')}
                 className="w-full px-4 py-2.5 rounded-lg bg-transparent border-[2px] outline-none transition-all"
                 style={{
                   borderColor: '#afa2c3',
@@ -190,6 +201,9 @@ export default function NuevaVentaPage() {
                 </option>
                 <option value="Mayorista" style={{ background: '#2c5b2d' }}>
                   Mayorista
+                </option>
+                <option value="Supermayorista" style={{ background: '#2c5b2d' }}>
+                  Supermayorista
                 </option>
               </select>
             </div>

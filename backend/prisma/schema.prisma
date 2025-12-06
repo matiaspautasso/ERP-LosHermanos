@@ -24,7 +24,7 @@ model clientes {
   apellido       String           @db.VarChar(80)
   telefono       String?          @db.VarChar(30)
   correo         String?          @db.VarChar(120)
-  tipo           String           @db.VarChar(10)
+  tipo           String           @db.VarChar(20)
   activo         Boolean          @default(true)
   fecha_alta     DateTime         @default(now()) @db.Timestamptz(6)
   movimientos_cc movimientos_cc[]
@@ -165,6 +165,7 @@ model precios {
   producto_id         BigInt
   precio_minorista    Decimal   @db.Decimal(12, 2)
   precio_mayorista    Decimal   @db.Decimal(12, 2)
+  precio_supermayorista Decimal @default(0) @db.Decimal(12, 2)
   ultima_modificacion DateTime  @default(now()) @db.Timestamptz(6)
   usuario_id          BigInt
   productos           productos @relation(fields: [producto_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -280,7 +281,7 @@ model ventas {
   id            BigInt          @id @default(autoincrement())
   fecha         DateTime        @default(now()) @db.Timestamptz(6)
   cliente_id    BigInt
-  tipo_venta    String          @db.VarChar(10)
+  tipo_venta    String          @db.VarChar(20)
   descuento     Decimal         @default(0) @db.Decimal(12, 2)
   total         Decimal         @db.Decimal(12, 2)
   forma_pago    String          @db.VarChar(12)

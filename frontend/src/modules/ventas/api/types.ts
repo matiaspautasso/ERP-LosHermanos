@@ -42,7 +42,7 @@ export interface VentaItem {
 
 export interface CreateVentaRequest {
   cliente_id: string;
-  tipo_venta: 'Minorista' | 'Mayorista';
+  tipo_venta: 'Minorista' | 'Mayorista' | 'Supermayorista';
   forma_pago: 'Efectivo' | 'Tarjeta';
   descuento_porcentaje: number;
   items: VentaItem[];
