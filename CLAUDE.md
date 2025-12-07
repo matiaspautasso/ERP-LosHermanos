@@ -260,6 +260,8 @@ Se implementaron 6 cambios para mejorar UX y validaciones en el flujo de ventas:
 
 8. **Búsqueda de productos sin distinguir acentos** - Habilitada extensión `unaccent` en PostgreSQL. Búsqueda usa `unaccent(p.nombre) ILIKE unaccent('%valor%')`. Ejemplos: "jamon" encuentra "jamón", "cafe" encuentra "café".
 
+9. **Modal de búsqueda permanece abierto al agregar productos** - Eliminado `setShowBuscarProducto(false)` del callback `onSelect`. Permite agregar múltiples productos de forma continua sin tener que reabrir el modal. Cierre solo manual con botón X.
+
 **Archivos modificados:**
-- `frontend/src/modules/ventas/pages/NuevaVentaPage.tsx` (línea 245)
+- `frontend/src/modules/ventas/pages/NuevaVentaPage.tsx` (líneas 245, 541)
 - `backend/src/modules/productos/productos.service.ts` (método `search()` reescrito con SQL raw)

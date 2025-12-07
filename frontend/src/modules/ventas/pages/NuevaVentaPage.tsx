@@ -3,6 +3,7 @@ import { Plus, Trash2, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { BuscarProductoModal } from '../components/BuscarProductoModal';
+import { ConfirmacionModal } from '../components/ConfirmacionModal';
 import { useVentas, useClientes } from '../hooks/useVentas';
 import { Producto } from '../api/types';
 
@@ -10,38 +11,77 @@ interface ProductoVenta {
   id: string;
   nombre: string;
   precio_lista: number;
-  cantidad: number;
+  cantidad: number | string;
   stock_disponible: number;
 }
 
 export default function NuevaVentaPage() {
   const [showBuscarProducto, setShowBuscarProducto] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [nuevoClienteId, setNuevoClienteId] = useState('');
   const [productos, setProductos] = useState<ProductoVenta[]>([]);
   const [clienteId, setClienteId] = useState('');
   const [tipoVenta, setTipoVenta] = useState<'Minorista' | 'Mayorista' | 'Supermayorista'>('Minorista');
   const [formaPago, setFormaPago] = useState<'Efectivo' | 'Tarjeta'>('Efectivo');
-  const [descuentoPorcentaje, setDescuentoPorcentaje] = useState(0);
+  const [descuentoPorcentaje, setDescuentoPorcentaje] = useState<number | ''>('');
 
   const { data: clientes = [], isLoading: loadingClientes } = useClientes();
-  const { createVenta, creandoVenta } = useVentas();
 
-  const IVA_PORCENTAJE = 21;
-
-  const calcularSubtotal = (producto: ProductoVenta) => {
-    return producto.precio_lista * producto.cantidad;
+  const limpiarFormulario = () => {
+    setProductos([]);
+    setClienteId('');
+    setTipoVenta('Minorista');
+    setDescuentoPorcentaje('');
+    setFormaPago('Efectivo');
   };
 
-  const calcularIVA = (producto: ProductoVenta) => {
-    const subtotal = calcularSubtotal(producto);
-    return (subtotal * IVA_PORCENTAJE) / 100;
+  const { createVenta, creandoVenta } = useVentas(limpiarFormulario);
+
+  const handleClienteChange = (selectedId: string) => {
+    if (productos.length > 0) {
+      setNuevoClienteId(selectedId);
+      setShowConfirmModal(true);
+    } else {
+      setClienteId(selectedId);
+
+      // Auto-asignar tipo de venta según el tipo de cliente
+      if (selectedId) {
+        const cliente = clientes.find(c => c.id === selectedId);
+        if (cliente) {
+          setTipoVenta(cliente.tipo as 'Minorista' | 'Mayorista' | 'Supermayorista');
+        }
+      }
+    }
+  };
+
+  const confirmarCambioCliente = () => {
+    limpiarFormulario();
+    setClienteId(nuevoClienteId);
+
+    // Auto-asignar tipo de venta según el tipo de cliente
+    if (nuevoClienteId) {
+      const cliente = clientes.find(c => c.id === nuevoClienteId);
+      if (cliente) {
+        setTipoVenta(cliente.tipo as 'Minorista' | 'Mayorista' | 'Supermayorista');
+      }
+    }
+
+    setShowConfirmModal(false);
+    setNuevoClienteId('');
+  };
+
+  const calcularSubtotal = (producto: ProductoVenta) => {
+    const cantidad = typeof producto.cantidad === 'number' ? producto.cantidad : parseFloat(producto.cantidad) || 0;
+    return producto.precio_lista * cantidad;
   };
 
   const calcularTotales = () => {
     const subtotal = productos.reduce(
-      (sum, p) => sum + calcularSubtotal(p) + calcularIVA(p),
+      (sum, p) => sum + calcularSubtotal(p),
       0
     );
-    const descuentoMonto = (subtotal * descuentoPorcentaje) / 100;
+    const descuento = typeof descuentoPorcentaje === 'number' ? descuentoPorcentaje : 0;
+    const descuentoMonto = (subtotal * descuento) / 100;
     const total = subtotal - descuentoMonto;
 
     return {
@@ -55,7 +95,21 @@ export default function NuevaVentaPage() {
     setProductos(productos.filter((p) => p.id !== id));
   };
 
+  const handleAbrirBuscarProducto = () => {
+    if (!clienteId) {
+      toast.error('Debes seleccionar un cliente antes de agregar productos');
+      return;
+    }
+    setShowBuscarProducto(true);
+  };
+
   const agregarProducto = (producto: Producto) => {
+    // Verificar cliente seleccionado
+    if (!clienteId) {
+      toast.error('Debes seleccionar un cliente antes de agregar productos');
+      return;
+    }
+
     // Verificar si el producto ya está en la lista
     const productoExistente = productos.find((p) => p.id === producto.id);
 
@@ -76,10 +130,20 @@ export default function NuevaVentaPage() {
     ]);
   };
 
-  const actualizarCantidad = (id: string, cantidad: number) => {
+  const actualizarCantidad = (id: string, cantidad: number | string) => {
     const producto = productos.find((p) => p.id === id);
 
-    if (producto && cantidad > producto.stock_disponible) {
+    // Permitir string vacío durante edición
+    if (cantidad === '') {
+      setProductos(
+        productos.map((p) => (p.id === id ? { ...p, cantidad: '' } : p))
+      );
+      return;
+    }
+
+    // Validar stock solo si hay número válido
+    const cantidadNum = typeof cantidad === 'number' ? cantidad : parseFloat(cantidad);
+    if (producto && cantidadNum > producto.stock_disponible) {
       toast.error(
         `Stock insuficiente. Disponible: ${producto.stock_disponible}`
       );
@@ -87,7 +151,7 @@ export default function NuevaVentaPage() {
     }
 
     setProductos(
-      productos.map((p) => (p.id === id ? { ...p, cantidad: Math.max(1, cantidad) } : p))
+      productos.map((p) => (p.id === id ? { ...p, cantidad } : p))
     );
   };
 
@@ -103,15 +167,22 @@ export default function NuevaVentaPage() {
       return;
     }
 
+    // Validar que ningún producto tenga cantidad vacía
+    const productosConCantidadVacia = productos.filter(p => p.cantidad === '' || p.cantidad === 0);
+    if (productosConCantidadVacia.length > 0) {
+      toast.error('Todos los productos deben tener una cantidad válida');
+      return;
+    }
+
     // Crear la venta
     createVenta({
       cliente_id: clienteId,
       tipo_venta: tipoVenta,
       forma_pago: formaPago,
-      descuento_porcentaje: descuentoPorcentaje,
+      descuento_porcentaje: typeof descuentoPorcentaje === 'number' ? descuentoPorcentaje : 0,
       items: productos.map((p) => ({
         producto_id: p.id,
-        cantidad: p.cantidad,
+        cantidad: typeof p.cantidad === 'number' ? p.cantidad : parseFloat(p.cantidad),
         precio_unitario: p.precio_lista,
       })),
     });
@@ -136,18 +207,7 @@ export default function NuevaVentaPage() {
               </label>
               <select
                 value={clienteId}
-                onChange={(e) => {
-                  const selectedId = e.target.value;
-                  setClienteId(selectedId);
-                  
-                  // Auto-asignar tipo de venta según el tipo de cliente
-                  if (selectedId) {
-                    const cliente = clientes.find(c => c.id === selectedId);
-                    if (cliente) {
-                      setTipoVenta(cliente.tipo as 'Minorista' | 'Mayorista' | 'Supermayorista');
-                    }
-                  }
-                }}
+                onChange={(e) => handleClienteChange(e.target.value)}
                 disabled={loadingClientes}
                 className="w-full px-4 py-2.5 rounded-lg bg-transparent border-[2px] outline-none transition-all"
                 style={{
@@ -182,10 +242,13 @@ export default function NuevaVentaPage() {
               <select
                 value={tipoVenta}
                 onChange={(e) => setTipoVenta(e.target.value as 'Minorista' | 'Mayorista' | 'Supermayorista')}
+                disabled={!!clienteId}
                 className="w-full px-4 py-2.5 rounded-lg bg-transparent border-[2px] outline-none transition-all"
                 style={{
                   borderColor: '#afa2c3',
                   color: '#f1eef7',
+                  opacity: clienteId ? 0.5 : 1,
+                  cursor: clienteId ? 'not-allowed' : 'pointer',
                 }}
                 onFocus={(e) => {
                   e.currentTarget.style.borderColor = '#a03cea';
@@ -218,17 +281,26 @@ export default function NuevaVentaPage() {
               <span className="hidden md:inline">Productos de la Venta</span>
             </h3>
             <button
-              onClick={() => setShowBuscarProducto(true)}
+              onClick={handleAbrirBuscarProducto}
+              disabled={!clienteId}
               className="px-4 py-2 rounded-lg flex items-center gap-2 transition-all"
               style={{
-                background: 'linear-gradient(135deg, #FB6564 0%, #A03CEA 100%)',
+                background: !clienteId
+                  ? 'rgba(175, 162, 195, 0.3)'
+                  : 'linear-gradient(135deg, #FB6564 0%, #A03CEA 100%)',
                 color: '#fff',
+                opacity: !clienteId ? 0.5 : 1,
+                cursor: !clienteId ? 'not-allowed' : 'pointer',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(135deg, #fa4a49 0%, #8f2bd1 100%)';
+                if (clienteId) {
+                  e.currentTarget.style.background = 'linear-gradient(135deg, #fa4a49 0%, #8f2bd1 100%)';
+                }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(135deg, #FB6564 0%, #A03CEA 100%)';
+                if (clienteId) {
+                  e.currentTarget.style.background = 'linear-gradient(135deg, #FB6564 0%, #A03CEA 100%)';
+                }
               }}
             >
               <Plus size={18} />
@@ -263,9 +335,6 @@ export default function NuevaVentaPage() {
                       <span className="hidden md:inline">Subtotal</span>
                     </th>
                     <th className="text-left py-3 px-4" style={{ color: '#fefbe4' }}>
-                      IVA
-                    </th>
-                    <th className="text-left py-3 px-4" style={{ color: '#fefbe4' }}>
                       <span className="md:hidden">Acc</span>
                       <span className="hidden md:inline">Acción</span>
                     </th>
@@ -288,9 +357,11 @@ export default function NuevaVentaPage() {
                         <input
                           type="number"
                           value={producto.cantidad}
-                          onChange={(e) =>
-                            actualizarCantidad(producto.id, parseInt(e.target.value) || 1)
-                          }
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            actualizarCantidad(producto.id, value === '' ? '' : parseFloat(value));
+                          }}
+                          placeholder="1"
                           min="1"
                           max={producto.stock_disponible}
                           className="w-20 px-2 py-1 rounded bg-transparent border-[2px] outline-none"
@@ -302,9 +373,6 @@ export default function NuevaVentaPage() {
                       </td>
                       <td className="py-3 px-4" style={{ color: '#f1eef7' }}>
                         ${calcularSubtotal(producto).toFixed(2)}
-                      </td>
-                      <td className="py-3 px-4" style={{ color: '#f1eef7' }}>
-                        ${calcularIVA(producto).toFixed(2)}
                       </td>
                       <td className="py-3 px-4">
                         <button
@@ -341,7 +409,10 @@ export default function NuevaVentaPage() {
                 <input
                   type="number"
                   value={descuentoPorcentaje}
-                  onChange={(e) => setDescuentoPorcentaje(parseFloat(e.target.value) || 0)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setDescuentoPorcentaje(value === '' ? '' : parseFloat(value));
+                  }}
                   min="0"
                   max="100"
                   className="w-full px-4 py-2.5 rounded-lg bg-transparent border-[2px] outline-none transition-all"
@@ -467,7 +538,18 @@ export default function NuevaVentaPage() {
             onClose={() => setShowBuscarProducto(false)}
             onSelect={(producto) => {
               agregarProducto(producto);
-              setShowBuscarProducto(false);
+            }}
+          />
+        )}
+
+        {/* Modal Confirmación Cambio Cliente */}
+        {showConfirmModal && (
+          <ConfirmacionModal
+            mensaje="Cambiar cliente borrará todos los productos. ¿Desea continuar?"
+            onConfirm={confirmarCambioCliente}
+            onCancel={() => {
+              setShowConfirmModal(false);
+              setNuevoClienteId('');
             }}
           />
         )}
