@@ -265,3 +265,72 @@ Se implementaron 6 cambios para mejorar UX y validaciones en el flujo de ventas:
 **Archivos modificados:**
 - `frontend/src/modules/ventas/pages/NuevaVentaPage.tsx` (líneas 245, 541)
 - `backend/src/modules/productos/productos.service.ts` (método `search()` reescrito con SQL raw)
+
+---
+
+## Estado Actual del Proyecto (2025-12-07)
+
+### Ramas Activas
+
+**Rama principal de desarrollo:** `desarrollo`
+**Última integración:** Merge de cambios del módulo Ventas desde `desarrollo-01`
+**Commit:** `451aaf9` - feat: integrar mejoras completas del módulo Ventas
+
+### Módulos Completados
+
+**✅ Módulo Auth (Login):**
+- Login con email/contraseña
+- Registro de usuarios
+- Recuperación de contraseña por email
+- Cambio de contraseña desde perfil
+- Sesiones con express-session (cookies)
+- Rama: `desarrollo` (commits 110b2d5, bf5ac04)
+
+**✅ Módulo Ventas:**
+- 9 mejoras implementadas (cambios 1-9)
+- Eliminación completa de IVA del sistema
+- Soporte para Supermayorista
+- Búsqueda de productos sin acentos (unaccent)
+- Modal de confirmación reutilizable
+- UX optimizada para ventas consecutivas
+- Rama: `desarrollo` (integrado desde `desarrollo-01`)
+
+### Arquitectura de Base de Datos
+
+**Cambios recientes en schema:**
+- Campo `iva_porcentaje` eliminado de `detalle_venta`
+- Campo `precio_supermayorista` agregado a `precios` (Decimal 12,2, default 0)
+- VARCHAR ampliado a 20 caracteres en `tipo` y `tipo_venta`
+
+**Extensiones PostgreSQL:**
+- ✅ `unaccent` habilitada para búsquedas sin acentos
+
+### Resumen de Archivos por Módulo
+
+**Módulo Ventas (14 archivos):**
+- Backend: `schema.prisma`, `productos.service.ts`, `ventas.service.ts`, `create-venta.dto.ts`
+- Frontend: `types.ts`, `useVentas.ts`, `NuevaVentaPage.tsx`, `DetalleVentaPage.tsx`, `ConfirmacionModal.tsx`
+- Scripts: 4 archivos de utilidad (check-tipos-cliente.js, reset-admin-password.js, etc.)
+- Docs: `CLAUDE.md`
+
+**Módulo Auth (5 archivos protegidos):**
+- Backend: `auth.controller.ts`, `auth.service.ts`, `change-password.dto.ts`, `dto/index.ts`
+- Frontend: `LoginPage.tsx`
+
+### Estado de Servidores
+
+**Desarrollo:**
+- Backend: `http://localhost:3000`
+- Frontend: `http://localhost:5173`
+- API Docs: `http://localhost:3000/api/docs`
+
+**Credenciales:**
+- Usuario: `vendedor@erp.com`
+- Contraseña: `vendedor123`
+
+### Próximos Pasos Sugeridos
+
+1. **Testing de integración:** Validar flujos completos de Login y Ventas
+2. **Push a remoto:** Subir rama `desarrollo` actualizada
+3. **Módulos pendientes:** Clientes (frontend), Compras, Reportes
+4. **Optimizaciones:** Implementar caché, mejorar performance de búsquedas
