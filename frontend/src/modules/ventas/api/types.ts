@@ -57,7 +57,6 @@ export interface VentaResponse {
     tipo_venta: string;
     forma_pago: string;
     subtotal: string;
-    iva: string;
     descuento: string;
     total: string;
     items: {
@@ -96,7 +95,6 @@ export interface VentaDetalle {
     unidad: string;
     cantidad: number;
     precio_unitario: number;
-    iva_porcentaje: number;
     subtotal: number;
   }[];
 }

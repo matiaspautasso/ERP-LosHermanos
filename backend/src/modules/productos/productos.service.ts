@@ -82,51 +82,48 @@ export class ProductosService {
   }
 
   /**
-   * Buscar productos por nombre o categoría
+   * Buscar productos por nombre o categoría (insensible a acentos)
    */
   async search(nombre?: string, categoriaId?: string) {
-    const where: any = {
-      activo: true,
-    };
+    // Construir la consulta SQL con unaccent para búsqueda sin acentos
+    let query = `
+      SELECT
+        p.id,
+        p.nombre,
+        p.precio_lista,
+        p.stock_actual,
+        p.stock_minimo,
+        p.iva_porcentaje,
+        p.descripcion,
+        jsonb_build_object('id', c.id, 'nombre', c.nombre) as categorias,
+        jsonb_build_object('id', u.id, 'nombre', u.nombre) as unidades
+      FROM productos p
+      INNER JOIN categorias c ON p.categoria_id = c.id
+      INNER JOIN unidades u ON p.unidad_id = u.id
+      WHERE p.activo = true
+    `;
 
+    const params: any[] = [];
+    let paramIndex = 1;
+
+    // Filtro por nombre usando unaccent
     if (nombre) {
-      where.nombre = {
-        contains: nombre,
-        mode: 'insensitive',
-      };
+      query += ` AND unaccent(p.nombre) ILIKE unaccent($${paramIndex})`;
+      params.push(`%${nombre}%`);
+      paramIndex++;
     }
 
+    // Filtro por categoría
     if (categoriaId) {
-      where.categoria_id = BigInt(categoriaId);
+      query += ` AND p.categoria_id = $${paramIndex}`;
+      params.push(BigInt(categoriaId));
+      paramIndex++;
     }
 
-    const productos = await this.prisma.productos.findMany({
-      where,
-      select: {
-        id: true,
-        nombre: true,
-        precio_lista: true,
-        stock_actual: true,
-        stock_minimo: true,
-        iva_porcentaje: true,
-        descripcion: true,
-        categorias: {
-          select: {
-            id: true,
-            nombre: true,
-          },
-        },
-        unidades: {
-          select: {
-            id: true,
-            nombre: true,
-          },
-        },
-      },
-      orderBy: {
-        nombre: 'asc',
-      },
-    });
+    query += ` ORDER BY p.nombre ASC`;
+
+    // Ejecutar query raw
+    const productos = await this.prisma.$queryRawUnsafe(query, ...params);
 
     return productos;
   }

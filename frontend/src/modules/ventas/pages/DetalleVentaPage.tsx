@@ -118,9 +118,6 @@ export default function DetalleVentaPage() {
                     Precio Unit.
                   </th>
                   <th className="text-left py-3 px-4" style={{ color: '#fefbe4' }}>
-                    IVA %
-                  </th>
-                  <th className="text-left py-3 px-4" style={{ color: '#fefbe4' }}>
                     Subtotal
                   </th>
                 </tr>
@@ -143,9 +140,6 @@ export default function DetalleVentaPage() {
                     </td>
                     <td className="py-3 px-4" style={{ color: '#f1eef7' }}>
                       ${Number(item.precio_unitario).toFixed(2)}
-                    </td>
-                    <td className="py-3 px-4" style={{ color: '#f1eef7' }}>
-                      {Number(item.iva_porcentaje)}%
                     </td>
                     <td className="py-3 px-4" style={{ color: '#f1eef7' }}>
                       ${Number(item.subtotal).toFixed(2)}
