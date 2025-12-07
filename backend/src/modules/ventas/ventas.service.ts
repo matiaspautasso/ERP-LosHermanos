@@ -11,7 +11,6 @@ import { Decimal } from '@prisma/client/runtime/library';
 @Injectable()
 export class VentasService {
   private readonly logger = new Logger(VentasService.name);
-  private readonly IVA_PORCENTAJE = 21; // IVA fijo del 21%
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -94,16 +93,13 @@ export class VentasService {
         producto_id: BigInt(item.producto_id),
         cantidad: item.cantidad,
         precio_unitario: precioUnitario,
-        iva_porcentaje: this.IVA_PORCENTAJE,
         subtotal: subtotal,
       };
     });
 
-    // Calcular IVA y descuento
-    const ivaTotal = (subtotalGeneral * this.IVA_PORCENTAJE) / 100;
-    const subtotalConIva = subtotalGeneral + ivaTotal;
-    const descuentoMonto = (subtotalConIva * descuento_porcentaje) / 100;
-    const total = subtotalConIva - descuentoMonto;
+    // Calcular descuento y total
+    const descuentoMonto = (subtotalGeneral * descuento_porcentaje) / 100;
+    const total = subtotalGeneral - descuentoMonto;
 
     // 4. Crear venta con items en una transacción
     const venta = await this.prisma.$transaction(async (prisma) => {
@@ -121,7 +117,6 @@ export class VentasService {
               producto_id: item.producto_id,
               cantidad: new Decimal(item.cantidad),
               precio_unitario: new Decimal(item.precio_unitario),
-              iva_porcentaje: new Decimal(item.iva_porcentaje),
               subtotal: new Decimal(item.subtotal),
             })),
           },
@@ -183,7 +178,6 @@ export class VentasService {
         tipo_venta: venta.tipo_venta,
         forma_pago: venta.forma_pago,
         subtotal: subtotalGeneral.toFixed(2),
-        iva: ivaTotal.toFixed(2),
         descuento: descuentoMonto.toFixed(2),
         total: total.toFixed(2),
         items: venta.detalle_venta.map((detalle) => ({
@@ -305,7 +299,6 @@ export class VentasService {
         unidad: detalle.productos.unidades.nombre,
         cantidad: Number(detalle.cantidad),
         precio_unitario: Number(detalle.precio_unitario),
-        iva_porcentaje: Number(detalle.iva_porcentaje),
         subtotal: Number(detalle.subtotal),
       })),
     };

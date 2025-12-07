@@ -6,7 +6,7 @@ import { clientesService } from '../api/clientesService';
 import { productosService } from '../api/productosService';
 import { CreateVentaRequest, VentaFilters } from '../api/types';
 
-export function useVentas() {
+export function useVentas(onSuccess?: () => void) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -16,7 +16,9 @@ export function useVentas() {
     onSuccess: (response) => {
       toast.success(response.message);
       queryClient.invalidateQueries({ queryKey: ['ventas'] });
-      navigate('/ventas/lista');
+      if (onSuccess) {
+        onSuccess();
+      }
     },
     onError: (error: any) => {
       const message = error.response?.data?.message || 'Error al crear la venta';
