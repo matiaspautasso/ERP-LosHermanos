@@ -19,4 +19,13 @@ export class UpdatePrecioDto {
   @IsNumber({}, { message: 'El precio mayorista debe ser un número' })
   @IsPositive({ message: 'El precio mayorista debe ser positivo' })
   precio_mayorista: number;
+
+  @ApiProperty({
+    description: 'Precio supermayorista del producto',
+    example: 120.00,
+  })
+  @IsNotEmpty({ message: 'El precio supermayorista es requerido' })
+  @IsNumber({}, { message: 'El precio supermayorista debe ser un número' })
+  @IsPositive({ message: 'El precio supermayorista debe ser positivo' })
+  precio_supermayorista: number;
 }

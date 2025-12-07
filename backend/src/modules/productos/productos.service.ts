@@ -20,7 +20,6 @@ export class ProductosService {
         precio_lista: true,
         stock_actual: true,
         stock_minimo: true,
-        iva_porcentaje: true,
         descripcion: true,
         categorias: {
           select: {
@@ -56,7 +55,6 @@ export class ProductosService {
         costo: true,
         stock_actual: true,
         stock_minimo: true,
-        iva_porcentaje: true,
         descripcion: true,
         activo: true,
         categorias: {
@@ -185,6 +183,7 @@ export class ProductosService {
             id: true,
             precio_minorista: true,
             precio_mayorista: true,
+            precio_supermayorista: true,
             ultima_modificacion: true,
           },
           orderBy: {
@@ -206,6 +205,8 @@ export class ProductosService {
       categoria_id: producto.categorias.id,
       precio_minorista: producto.precios[0]?.precio_minorista || producto.precio_lista,
       precio_mayorista: producto.precios[0]?.precio_mayorista || producto.precio_lista,
+      precio_supermayorista: producto.precios[0]?.precio_supermayorista || producto.precio_lista,
+      ultima_modificacion: producto.precios[0]?.ultima_modificacion,
       tiene_precios_configurados: producto.precios.length > 0,
     }));
   }
@@ -235,6 +236,7 @@ export class ProductosService {
         data: {
           precio_minorista: updatePrecioDto.precio_minorista,
           precio_mayorista: updatePrecioDto.precio_mayorista,
+          precio_supermayorista: updatePrecioDto.precio_supermayorista,
           usuario_id: usuarioId,
           ultima_modificacion: new Date(),
         },
@@ -246,6 +248,7 @@ export class ProductosService {
           producto_id: productoId,
           precio_minorista: updatePrecioDto.precio_minorista,
           precio_mayorista: updatePrecioDto.precio_mayorista,
+          precio_supermayorista: updatePrecioDto.precio_supermayorista,
           usuario_id: usuarioId,
         },
       });
@@ -294,14 +297,17 @@ export class ProductosService {
         // Calcular nuevos precios
         let nuevoMinorista: number;
         let nuevoMayorista: number;
+        let nuevoSupermayorista: number;
 
         if (precioActual) {
           nuevoMinorista = Number(precioActual.precio_minorista) * factor;
           nuevoMayorista = Number(precioActual.precio_mayorista) * factor;
+          nuevoSupermayorista = Number(precioActual.precio_supermayorista) * factor;
         } else {
           // Si no tiene precios configurados, usar precio_lista como base
           nuevoMinorista = Number(producto.precio_lista) * factor;
           nuevoMayorista = Number(producto.precio_lista) * factor;
+          nuevoSupermayorista = Number(producto.precio_lista) * factor;
         }
 
         // Aplicar ajuste según el tipo
@@ -310,12 +316,16 @@ export class ProductosService {
           ultima_modificacion: new Date(),
         };
 
-        if (tipo === TipoPrecio.MINORISTA || tipo === TipoPrecio.AMBOS) {
+        if (tipo === TipoPrecio.MINORISTA || tipo === TipoPrecio.TODOS) {
           datosActualizacion.precio_minorista = nuevoMinorista;
         }
 
-        if (tipo === TipoPrecio.MAYORISTA || tipo === TipoPrecio.AMBOS) {
+        if (tipo === TipoPrecio.MAYORISTA || tipo === TipoPrecio.TODOS) {
           datosActualizacion.precio_mayorista = nuevoMayorista;
+        }
+
+        if (tipo === TipoPrecio.SUPERMAYORISTA || tipo === TipoPrecio.TODOS) {
+          datosActualizacion.precio_supermayorista = nuevoSupermayorista;
         }
 
         // Actualizar o crear registro de precios
@@ -330,6 +340,7 @@ export class ProductosService {
               producto_id: producto.id,
               precio_minorista: nuevoMinorista,
               precio_mayorista: nuevoMayorista,
+              precio_supermayorista: nuevoSupermayorista,
               usuario_id: usuarioId,
             },
           });

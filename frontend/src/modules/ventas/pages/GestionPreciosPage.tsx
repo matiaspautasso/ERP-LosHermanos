@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react';
-import { DollarSign } from 'lucide-react';
+import { DollarSign, Edit } from 'lucide-react';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
-import { useProductosConPrecios, useUpdatePrecio } from '../hooks/usePrecios';
+import { useProductosConPrecios, useUpdatePrecio, useAjusteMasivo } from '../hooks/usePrecios';
 import { useCategorias } from '../hooks/useVentas';
-import { AjusteMasivoModal } from '@/modules/productos/components/AjusteMasivoModal';
+import { ModalEditarPrecio } from '../components/ModalEditarPrecio';
+import { ModalAjusteMasivo } from '../components/ModalAjusteMasivo';
 import { ProductoConPrecios } from '../api/types';
 
 export default function GestionPreciosPage() {
@@ -12,12 +13,13 @@ export default function GestionPreciosPage() {
     categoria: '',
   });
   const [productosSeleccionados, setProductosSeleccionados] = useState<string[]>([]);
-  const [preciosEditados, setPreciosEditados] = useState<Record<string, { minorista: number; mayorista: number }>>({});
+  const [productoEditando, setProductoEditando] = useState<ProductoConPrecios | null>(null);
   const [modalAjusteMasivoAbierto, setModalAjusteMasivoAbierto] = useState(false);
 
   const { data: productos = [], isLoading } = useProductosConPrecios();
   const { data: categorias = [] } = useCategorias();
   const updatePrecioMutation = useUpdatePrecio();
+  const ajusteMasivoMutation = useAjusteMasivo();
 
   // Filtrar productos
   const productosFiltrados = useMemo(() => {
@@ -44,38 +46,37 @@ export default function GestionPreciosPage() {
     }
   };
 
-  // Manejar cambio en precio
-  const handlePrecioChange = (productoId: string, tipo: 'minorista' | 'mayorista', valor: string) => {
-    const valorNumerico = parseFloat(valor) || 0;
-    setPreciosEditados((prev) => ({
-      ...prev,
-      [productoId]: {
-        minorista: tipo === 'minorista' ? valorNumerico : prev[productoId]?.minorista || 0,
-        mayorista: tipo === 'mayorista' ? valorNumerico : prev[productoId]?.mayorista || 0,
-      },
-    }));
-  };
-
-  // Obtener precio actual (editado o original)
-  const getPrecioActual = (producto: ProductoConPrecios, tipo: 'minorista' | 'mayorista') => {
-    return preciosEditados[producto.id]?.[tipo] ?? producto[`precio_${tipo}`];
-  };
-
-  // Verificar si hay cambios pendientes
-  const hayCambiosPendientes = Object.keys(preciosEditados).length > 0;
-
-  // Guardar cambios individuales
-  const handleGuardarCambios = async () => {
-    for (const [productoId, precios] of Object.entries(preciosEditados)) {
-      await updatePrecioMutation.mutateAsync({
-        productoId,
-        data: {
-          precio_minorista: precios.minorista,
-          precio_mayorista: precios.mayorista,
+  // Guardar precio individual
+  const handleGuardarPrecio = (productoId: string, precios: any) => {
+    updatePrecioMutation.mutate(
+      { productoId, data: precios },
+      {
+        onSuccess: () => {
+          setProductoEditando(null);
         },
-      });
-    }
-    setPreciosEditados({});
+      }
+    );
+  };
+
+  // Aplicar ajuste masivo
+  const handleAjusteMasivo = (config: any) => {
+    const productosIds = config.aplicarSoloSeleccionados
+      ? productosSeleccionados.map((id) => parseInt(id))
+      : productosFiltrados.map((p) => parseInt(p.id));
+
+    ajusteMasivoMutation.mutate(
+      {
+        producto_ids: productosIds,
+        porcentaje: config.porcentaje,
+        tipo: config.tipo,
+      },
+      {
+        onSuccess: () => {
+          setModalAjusteMasivoAbierto(false);
+          setProductosSeleccionados([]);
+        },
+      }
+    );
   };
 
   // Limpiar filtros
@@ -178,51 +179,24 @@ export default function GestionPreciosPage() {
               Productos ({productosFiltrados.length})
             </h3>
 
-            <div className="flex gap-3">
-              <button
-                onClick={() => setModalAjusteMasivoAbierto(true)}
-                disabled={productosSeleccionados.length === 0}
-                className="px-4 py-2 rounded-lg transition-all flex items-center gap-2"
-                style={{
-                  background:
-                    productosSeleccionados.length > 0
-                      ? 'linear-gradient(135deg, #FB6564 0%, #A03CEA 100%)'
-                      : 'rgba(175, 162, 195, 0.3)',
-                  color: '#fff',
-                  opacity: productosSeleccionados.length > 0 ? 1 : 0.5,
-                  cursor: productosSeleccionados.length > 0 ? 'pointer' : 'not-allowed',
-                }}
-              >
-                <DollarSign size={18} />
-                Ajuste Masivo ({productosSeleccionados.length})
-              </button>
-
-              <button
-                onClick={handleGuardarCambios}
-                disabled={!hayCambiosPendientes || updatePrecioMutation.isPending}
-                className="px-4 py-2 rounded-lg border-[3px] bg-transparent transition-all"
-                style={{
-                  borderColor: hayCambiosPendientes ? '#4ade80' : '#afa2c3',
-                  color: hayCambiosPendientes ? '#4ade80' : '#afa2c3',
-                  opacity: hayCambiosPendientes ? 1 : 0.5,
-                  cursor: hayCambiosPendientes ? 'pointer' : 'not-allowed',
-                }}
-                onMouseEnter={(e) => {
-                  if (hayCambiosPendientes) {
-                    e.currentTarget.style.backgroundColor = '#4ade80';
-                    e.currentTarget.style.color = '#2c5b2d';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (hayCambiosPendientes) {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.color = '#4ade80';
-                  }
-                }}
-              >
-                {updatePrecioMutation.isPending ? 'Guardando...' : 'Guardar Cambios'}
-              </button>
-            </div>
+            <button
+              onClick={() => setModalAjusteMasivoAbierto(true)}
+              className="px-4 py-2 rounded-lg transition-all flex items-center gap-2"
+              style={{
+                background: 'linear-gradient(135deg, #FB6564 0%, #A03CEA 100%)',
+                color: '#fff',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'linear-gradient(135deg, #fa4a49 0%, #8f2bd1 100%)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'linear-gradient(135deg, #FB6564 0%, #A03CEA 100%)';
+              }}
+            >
+              <DollarSign size={18} />
+              Ajuste Masivo
+              {productosSeleccionados.length > 0 && ` (${productosSeleccionados.length})`}
+            </button>
           </div>
 
           {isLoading ? (
@@ -252,14 +226,17 @@ export default function GestionPreciosPage() {
                     <th className="text-left py-3 px-4" style={{ color: '#fefbe4' }}>
                       Categoría
                     </th>
-                    <th className="text-left py-3 px-4" style={{ color: '#fefbe4' }}>
-                      Precio Lista
+                    <th className="text-right py-3 px-4" style={{ color: '#fefbe4' }}>
+                      Minorista
                     </th>
-                    <th className="text-left py-3 px-4" style={{ color: '#fefbe4' }}>
-                      Precio Minorista
+                    <th className="text-right py-3 px-4" style={{ color: '#fefbe4' }}>
+                      Mayorista
                     </th>
-                    <th className="text-left py-3 px-4" style={{ color: '#fefbe4' }}>
-                      Precio Mayorista
+                    <th className="text-right py-3 px-4" style={{ color: '#fefbe4' }}>
+                      Supermayorista
+                    </th>
+                    <th className="text-center py-3 px-4" style={{ color: '#fefbe4' }}>
+                      Acciones
                     </th>
                   </tr>
                 </thead>
@@ -267,7 +244,7 @@ export default function GestionPreciosPage() {
                   {productosFiltrados.map((producto) => (
                     <tr
                       key={producto.id}
-                      className="border-b-[2px] hover:bg-[rgba(255,255,255,0.05)]"
+                      className="border-b-[2px] hover:bg-[rgba(255,255,255,0.05)] transition-colors"
                       style={{ borderColor: 'rgba(175, 162, 195, 0.3)' }}
                     >
                       <td className="py-3 px-4">
@@ -281,59 +258,35 @@ export default function GestionPreciosPage() {
                       <td className="py-3 px-4" style={{ color: '#f1eef7' }}>
                         {producto.nombre}
                       </td>
-                      <td className="py-3 px-4" style={{ color: '#f1eef7' }}>
+                      <td className="py-3 px-4" style={{ color: '#afa2c3' }}>
                         {producto.categoria}
                       </td>
-                      <td className="py-3 px-4" style={{ color: '#afa2c3' }}>
-                        ${Number(producto.precio_lista).toFixed(2)}
+                      <td className="py-3 px-4 text-right font-mono" style={{ color: '#4ade80' }}>
+                        ${Number(producto.precio_minorista).toFixed(2)}
                       </td>
-                      <td className="py-3 px-4">
-                        <input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          value={getPrecioActual(producto, 'minorista')}
-                          onChange={(e) => handlePrecioChange(producto.id, 'minorista', e.target.value)}
-                          className="w-full px-3 py-1.5 rounded-lg bg-transparent border-[2px] outline-none transition-all"
-                          style={{
-                            borderColor: preciosEditados[producto.id]?.minorista ? '#4ade80' : '#afa2c3',
-                            color: '#f1eef7',
-                          }}
-                          onFocus={(e) => {
-                            e.currentTarget.style.borderColor = '#a03cea';
-                            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(160, 60, 234, 0.2)';
-                          }}
-                          onBlur={(e) => {
-                            e.currentTarget.style.borderColor = preciosEditados[producto.id]?.minorista
-                              ? '#4ade80'
-                              : '#afa2c3';
-                            e.currentTarget.style.boxShadow = 'none';
-                          }}
-                        />
+                      <td className="py-3 px-4 text-right font-mono" style={{ color: '#fb923c' }}>
+                        ${Number(producto.precio_mayorista).toFixed(2)}
                       </td>
-                      <td className="py-3 px-4">
-                        <input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          value={getPrecioActual(producto, 'mayorista')}
-                          onChange={(e) => handlePrecioChange(producto.id, 'mayorista', e.target.value)}
-                          className="w-full px-3 py-1.5 rounded-lg bg-transparent border-[2px] outline-none transition-all"
+                      <td className="py-3 px-4 text-right font-mono" style={{ color: '#a78bfa' }}>
+                        ${Number(producto.precio_supermayorista).toFixed(2)}
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <button
+                          onClick={() => setProductoEditando(producto)}
+                          className="p-2 rounded-lg transition-all"
                           style={{
-                            borderColor: preciosEditados[producto.id]?.mayorista ? '#4ade80' : '#afa2c3',
-                            color: '#f1eef7',
+                            color: '#a03cea',
+                            background: 'rgba(160, 60, 234, 0.1)',
                           }}
-                          onFocus={(e) => {
-                            e.currentTarget.style.borderColor = '#a03cea';
-                            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(160, 60, 234, 0.2)';
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = 'rgba(160, 60, 234, 0.2)';
                           }}
-                          onBlur={(e) => {
-                            e.currentTarget.style.borderColor = preciosEditados[producto.id]?.mayorista
-                              ? '#4ade80'
-                              : '#afa2c3';
-                            e.currentTarget.style.boxShadow = 'none';
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'rgba(160, 60, 234, 0.1)';
                           }}
-                        />
+                        >
+                          <Edit size={18} />
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -344,18 +297,22 @@ export default function GestionPreciosPage() {
         </div>
       </div>
 
+      {/* Modal de edición individual */}
+      {productoEditando && (
+        <ModalEditarPrecio
+          producto={productoEditando}
+          onSave={handleGuardarPrecio}
+          onCancel={() => setProductoEditando(null)}
+        />
+      )}
+
       {/* Modal de ajuste masivo */}
       {modalAjusteMasivoAbierto && (
-        <AjusteMasivoModal
+        <ModalAjusteMasivo
           productosSeleccionados={productosSeleccionados}
-          onClose={() => {
-            setModalAjusteMasivoAbierto(false);
-            setProductosSeleccionados([]);
-          }}
-          onSuccess={() => {
-            // Los datos se recargan automáticamente por el hook useAjusteMasivo
-            setProductosSeleccionados([]);
-          }}
+          totalProductos={productosFiltrados.length}
+          onAplicar={handleAjusteMasivo}
+          onCancel={() => setModalAjusteMasivoAbierto(false)}
         />
       )}
     </DashboardLayout>

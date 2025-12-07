@@ -4,7 +4,8 @@ import { ApiProperty } from '@nestjs/swagger';
 export enum TipoPrecio {
   MINORISTA = 'minorista',
   MAYORISTA = 'mayorista',
-  AMBOS = 'ambos',
+  SUPERMAYORISTA = 'supermayorista',
+  TODOS = 'todos',
 }
 
 export class AjusteMasivoDto {
@@ -29,9 +30,9 @@ export class AjusteMasivoDto {
   @ApiProperty({
     description: 'Tipo de precio a ajustar',
     enum: TipoPrecio,
-    example: TipoPrecio.AMBOS,
+    example: TipoPrecio.TODOS,
   })
   @IsNotEmpty({ message: 'El tipo de precio es requerido' })
-  @IsEnum(TipoPrecio, { message: 'El tipo de precio debe ser: minorista, mayorista o ambos' })
+  @IsEnum(TipoPrecio, { message: 'El tipo de precio debe ser: minorista, mayorista, supermayorista o todos' })
   tipo: TipoPrecio;
 }

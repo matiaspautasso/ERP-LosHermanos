@@ -115,12 +115,15 @@ export interface ProductoConPrecios {
   categoria_id: string;
   precio_minorista: number;
   precio_mayorista: number;
+  precio_supermayorista: number;
+  ultima_modificacion?: string;
   tiene_precios_configurados: boolean;
 }
 
 export interface UpdatePrecioRequest {
   precio_minorista: number;
   precio_mayorista: number;
+  precio_supermayorista: number;
 }
 
 export interface UpdatePrecioResponse {
@@ -130,10 +133,11 @@ export interface UpdatePrecioResponse {
     producto_id: string;
     precio_minorista: number;
     precio_mayorista: number;
+    precio_supermayorista: number;
   };
 }
 
-export type TipoPrecio = 'minorista' | 'mayorista' | 'ambos';
+export type TipoPrecio = 'minorista' | 'mayorista' | 'supermayorista' | 'todos';
 
 export interface AjusteMasivoRequest {
   producto_ids: number[];
