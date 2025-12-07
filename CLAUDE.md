@@ -7,11 +7,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ERP Los Hermanos es un sistema integral de gestión empresarial para empresas medianas. El proyecto está organizado como un monorepo con aplicaciones separadas de backend (NestJS) y frontend (React), compartiendo una base de datos PostgreSQL unificada mediante Prisma ORM alojada en Supabase.
 
 **Stack Tecnológico:**
-- Backend: NestJS + TypeScript + Prisma ORM
+- Backend: NestJS + TypeScript + Prisma ORM + express-session
 - Frontend: React 18 + TypeScript + Vite + TailwindCSS + shadcn/ui
 - Base de Datos: PostgreSQL (Supabase) con 17 tablas normalizadas
 - Gestión de Estado: Zustand (frontend), EventEmitter (backend)
 - Capa HTTP: Axios + React Query
+- Testing: Jest (configurado pero sin tests implementados)
 
 ## Comandos de Desarrollo
 
@@ -22,25 +23,30 @@ npm run start:dev        # Iniciar servidor dev en http://localhost:3000
 npm run build            # Compilar para producción
 npm run start:prod       # Ejecutar build de producción
 npm run lint             # Ejecutar ESLint con auto-corrección
+npm test                 # Tests (placeholder - sin tests implementados)
 
 # Comandos de Prisma
-npm run prisma:generate  # Generar Prisma Client
-npm run prisma:migrate   # Ejecutar migraciones
-npm run prisma:studio    # Abrir interfaz gráfica Prisma Studio
+npm run prisma:generate  # Generar Prisma Client después de cambios en schema
+npm run prisma:migrate   # Crear y aplicar migración
+npm run prisma:studio    # Abrir interfaz gráfica en http://localhost:5555
 npm run prisma:seed      # Poblar base de datos con datos iniciales
+
+# Flujo de trabajo con Prisma
+npx prisma db pull       # Sincronizar schema desde base de datos existente
+npx prisma generate      # Regenerar Prisma Client
 ```
 
 ### Frontend (desde el directorio `frontend/`)
 ```bash
 npm install              # Instalar dependencias
 npm run dev              # Iniciar servidor dev en http://localhost:5173
-npm run build            # Compilar para producción (ejecuta verificación TypeScript primero)
+npm run build            # Compilar para producción (ejecuta tsc primero)
 npm run preview          # Previsualizar build de producción
 ```
 
 ### Base de Datos (desde la raíz del proyecto, Windows)
 ```bash
-# Ejecutar scripts SQL contra Supabase
+# Ejecutar scripts SQL contra Supabase usando psql local
 "/c/Program Files/PostgreSQL/18/bin/psql.exe" "postgresql://postgres:PASSWORD@HOST:PORT/postgres" -f database/DB-script-Loshermanos.sql
 ```
 
@@ -52,19 +58,23 @@ El proyecto sigue un patrón de monorepo modular donde tanto backend como fronte
 ```
 backend/src/
 ├── modules/              # Módulos de negocio
-│   ├── auth/            # Autenticación (basada en sesiones)
-│   ├── clientes/        # Clientes
-│   ├── productos/       # Productos
-│   ├── ventas/          # Ventas
-│   └── [otros]/         # Otros módulos
+│   ├── auth/            # ✅ Autenticación (basada en sesiones)
+│   ├── usuarios/        # 🔄 Gestión de usuarios (en desarrollo)
+│   ├── clientes/        # 🔄 Gestión de clientes (backend completado)
+│   ├── productos/       # 🔄 Productos y precios
+│   ├── ventas/          # ✅ Ventas y detalles de venta
+│   ├── compras/         # ⏳ Compras (estructura inicial)
+│   ├── proveedores/     # ⏳ Proveedores (estructura inicial)
+│   ├── email/           # 📧 Servicio de emails (nodemailer)
+│   └── reportes/        # ⏳ Reportes (estructura inicial)
 ├── core/                # Servicios compartidos (PrismaService)
 └── shared/              # Decoradores y utilidades
 
 frontend/src/
-├── modules/             # Módulos de negocio (refleja backend)
-│   ├── auth/
-│   ├── productos/
-│   └── ventas/
+├── modules/             # Módulos de negocio (solo implementados)
+│   ├── auth/            # ✅ Login, registro, recuperación
+│   ├── productos/       # 🔄 Gestión de precios
+│   └── ventas/          # ✅ Nueva venta, lista, detalles
 ├── core/                # Configuración global (axios, stores, rutas)
 └── shared/              # Componentes UI reutilizables (shadcn/ui)
 ```
@@ -174,8 +184,13 @@ VITE_API_URL=http://localhost:3000/api
 
 ### Trabajando con Prisma
 
-Al modificar la base de datos:
-1. Actualizar schema en BD → 2. `npx prisma db pull` → 3. `npx prisma generate` → 4. Reiniciar servidor
+**Workflow cuando se modifica la base de datos:**
+1. Actualizar schema directamente en PostgreSQL (Supabase)
+2. `npx prisma db pull` - Sincroniza schema.prisma con la BD
+3. `npx prisma generate` - Regenera Prisma Client con nuevos tipos
+4. Reiniciar servidor dev (`npm run start:dev`)
+
+**Nota importante:** Este proyecto usa database-first approach. Los cambios se hacen primero en PostgreSQL, luego se sincronizan con Prisma.
 
 ### Validación y Eventos
 
@@ -188,149 +203,146 @@ Al modificar la base de datos:
 
 **Despliegue:** Backend puerto 3000, Frontend puerto 5173 (dev) → archivos estáticos (prod). CORS configurado. Cookies con `secure: true` en producción.
 
-## Estado Actual de los Módulos
+## Estado de los Módulos
 
-### Módulos Implementados
+### ✅ Módulos Completados
 
-**Auth Module (Completo)**
+**Auth Module**
 - Endpoints: `/api/auth/login`, `/api/auth/register`, `/api/auth/logout`, `/api/auth/profile`, `/api/auth/recover`
-- Frontend: LoginPage, RegisterPage, RecoverPage con formularios validados
-- Funcionalidad: Login, registro, recuperación de contraseña, gestión de sesiones
+- Frontend: LoginPage, RegisterPage, RecoverPage, ProtectedRoute
+- Autenticación basada en sesiones (express-session, no JWT)
+- Recuperación de contraseña por email (nodemailer)
+- **Características adicionales:** Cambio de contraseña desde login
 
-**Productos Module (En desarrollo)**
-- Backend: CRUD básico implementado
-- Frontend: Componentes de gestión de precios (`GestionPreciosPage`)
-- Integrado con categorías y unidades
+**Ventas Module**
+- Backend: CRUD completo, búsqueda de productos con `unaccent`
+- Frontend: NuevaVentaPage, ListaVentasPage, DetalleVentaPage, modal de confirmación
+- Características: Búsqueda sin acentos, soporte Supermayorista, sin IVA
+- UX optimizada para ventas consecutivas
 
-**Ventas Module (En desarrollo)**
-- Backend: CRUD de ventas con detalles, búsqueda de productos
-- Frontend: `NuevaVentaPage`, `ListaVentasPage`, `DetalleVentaPage`
-- Funcionalidad: Crear ventas, listar ventas, ver detalles, búsqueda de productos
-- Integrado con clientes y productos
+### 🔄 Módulos en Desarrollo
 
-**Clientes Module (Backend implementado)**
-- Backend: CRUD básico de clientes
+**Productos Module**
+- Backend: CRUD básico, búsqueda avanzada
+- Frontend: GestionPreciosPage (parcial)
+- Integrado con categorías, unidades y precios
+
+**Clientes Module**
+- Backend: CRUD completo
 - Frontend: Pendiente
 
-### Módulos Planificados
-- **Compras:** Proveedores, órdenes de compra
-- **Reportes:** Dashboard ejecutivo, métricas de negocio
+**Usuarios Module**
+- Backend: Estructura inicial
+- Funcionalidad: Por definir
 
----
+### ⏳ Módulos Planificados
 
-## Historial de Cambios Recientes
+**Compras:** Backend inicial creado, frontend pendiente
+**Proveedores:** Backend inicial creado, frontend pendiente
+**Reportes:** Estructura inicial, sin implementación
+**Email:** Servicio base implementado (usado en auth recovery)
 
-### Rama de Desarrollo Actual
-**Rama activa:** `desarrollo-01`
+## Configuración de Desarrollo
 
-### Mejoras al Módulo de Ventas (2025-12-06)
-
-Se implementaron 6 cambios para mejorar UX y validaciones en el flujo de ventas:
-
-1. **Modal de confirmación al cambiar cliente** - Previene cambios accidentales con productos en carrito
-2. **Permanecer en página después de crear venta** - Limpia formulario automáticamente para ventas consecutivas
-3. **Campo descuento acepta valores vacíos** - Tipo `number | ''` para mejor UX
-4. **Validación de cliente antes de agregar productos** - Botón deshabilitado sin cliente seleccionado
-5. **Campo cantidad acepta valores vacíos** - Tipo `number | string` durante edición
-6. **Eliminación completa del IVA** - Removido del schema, cálculos y UI (`total = subtotal - descuento`)
-
-**Archivos creados:**
-- `frontend/src/modules/ventas/components/ConfirmacionModal.tsx`
-
-**Archivos modificados:**
-- `backend/prisma/schema.prisma`, `backend/src/modules/ventas/ventas.service.ts`
-- `frontend/src/modules/ventas/api/types.ts`, `hooks/useVentas.ts`
-- `frontend/src/modules/ventas/pages/NuevaVentaPage.tsx`, `DetalleVentaPage.tsx`
-
-### Estado de los Servidores
-- ✅ Backend corriendo en `http://localhost:3000`
-- ✅ Frontend corriendo en `http://localhost:5173`
-- ✅ Prisma Studio en `http://localhost:5555`
-- ✅ API Docs Swagger en `http://localhost:3000/api/docs`
+### URLs de Desarrollo
+- **Backend API:** `http://localhost:3000/api`
+- **Frontend:** `http://localhost:5173`
+- **Swagger Docs:** `http://localhost:3000/api/docs`
+- **Prisma Studio:** `http://localhost:5555` (cuando se ejecuta `npm run prisma:studio`)
 
 ### Credenciales de Prueba
-- Usuario: `vendedor`
+- Email: `vendedor@erp.com`
 - Contraseña: `vendedor123`
 
----
+### Extensiones PostgreSQL Habilitadas
+- `unaccent` - Búsquedas sin distinguir acentos (ej: "cafe" encuentra "café")
 
-### Mejoras Adicionales al Módulo de Ventas (2025-12-07)
+## Cambios Recientes (Diciembre 2025)
 
-7. **Bloqueo automático de tipo de venta al seleccionar cliente** - El select se bloquea inmediatamente con el tipo del cliente seleccionado (`disabled={!!clienteId}`). Garantiza consistencia entre tipo de cliente y tipo de venta desde el inicio.
+### Rama Actual: `desarrollo`
 
-8. **Búsqueda de productos sin distinguir acentos** - Habilitada extensión `unaccent` en PostgreSQL. Búsqueda usa `unaccent(p.nombre) ILIKE unaccent('%valor%')`. Ejemplos: "jamon" encuentra "jamón", "cafe" encuentra "café".
+**Mejoras al Módulo de Ventas (9 cambios implementados):**
+1. Modal de confirmación al cambiar cliente
+2. Formulario se mantiene abierto después de crear venta
+3. Campo descuento acepta valores vacíos
+4. Validación de cliente antes de agregar productos
+5. Campo cantidad acepta valores vacíos durante edición
+6. Eliminación completa del IVA del sistema
+7. Bloqueo automático de tipo de venta al seleccionar cliente
+8. Búsqueda de productos sin distinguir acentos
+9. Modal de búsqueda permanece abierto al agregar productos
 
-9. **Modal de búsqueda permanece abierto al agregar productos** - Eliminado `setShowBuscarProducto(false)` del callback `onSelect`. Permite agregar múltiples productos de forma continua sin tener que reabrir el modal. Cierre solo manual con botón X.
+**Mejoras al Módulo de Auth:**
+- Funcionalidad de cambio de contraseña desde login
+- Botón de registro restaurado en página de login
 
-**Archivos modificados:**
-- `frontend/src/modules/ventas/pages/NuevaVentaPage.tsx` (líneas 245, 541)
-- `backend/src/modules/productos/productos.service.ts` (método `search()` reescrito con SQL raw)
+**Cambios en Base de Datos:**
+- Campo `iva_porcentaje` eliminado de tabla `detalle_venta`
+- Campo `precio_supermayorista` agregado a tabla `precios` (Decimal 12,2, default 0)
+- VARCHAR ampliado a 20 caracteres en campos `tipo` y `tipo_venta`
 
----
+**Componentes Nuevos:**
+- `ConfirmacionModal.tsx` - Modal reutilizable de confirmación
 
-## Estado Actual del Proyecto (2025-12-07)
+## Convenciones de Código
 
-### Ramas Activas
+### Backend
+- DTOs para validación con `class-validator` decorators
+- Servicios manejan lógica de negocio, controllers solo routing
+- Todas las operaciones retornan objetos con estructura consistente
+- BigInt serializados automáticamente como strings en JSON
 
-**Rama principal de desarrollo:** `desarrollo`
-**Última integración:** Merge de cambios del módulo Ventas desde `desarrollo-01`
-**Commit:** `451aaf9` - feat: integrar mejoras completas del módulo Ventas
+### Frontend
+- Hooks personalizados usan prefijo `use` (ej: `useVentas`, `useAuth`)
+- Stores de Zustand para estado global (ej: `authStore`)
+- React Query para cache y sincronización con servidor
+- Componentes shadcn/ui en `shared/components/ui/`
 
-### Módulos Completados
+### Base de Datos
+- Database-first: cambios se hacen en PostgreSQL, luego `prisma db pull`
+- IDs son BigInt (convertidos a string en aplicación)
+- Timestamps con zona horaria: `@db.Timestamptz(6)`
+- Decimales monetarios: `@db.Decimal(12, 2)`
 
-**✅ Módulo Auth (Login):**
-- Login con email/contraseña
-- Registro de usuarios
-- Recuperación de contraseña por email
-- Cambio de contraseña desde perfil
-- Sesiones con express-session (cookies)
-- Rama: `desarrollo` (commits 110b2d5, bf5ac04)
+## Implementaciones Futuras Planificadas
 
-**✅ Módulo Ventas:**
-- 9 mejoras implementadas (cambios 1-9)
-- Eliminación completa de IVA del sistema
-- Soporte para Supermayorista
-- Búsqueda de productos sin acentos (unaccent)
-- Modal de confirmación reutilizable
-- UX optimizada para ventas consecutivas
-- Rama: `desarrollo` (integrado desde `desarrollo-01`)
+### Gestión de Precios (Submódulo de Ventas)
+**Objetivo:** Interfaz unificada para visualización, edición individual y ajustes masivos de precios.
 
-### Arquitectura de Base de Datos
+**Enfoque UX:** Pantalla única sin navegación entre vistas separadas.
 
-**Cambios recientes en schema:**
-- Campo `iva_porcentaje` eliminado de `detalle_venta`
-- Campo `precio_supermayorista` agregado a `precios` (Decimal 12,2, default 0)
-- VARCHAR ampliado a 20 caracteres en `tipo` y `tipo_venta`
+**Funcionalidad principal:**
+- Tabla con filtros por tipo de precio (Minorista/Mayorista/Supermayorista) y búsqueda
+- Edición individual mediante modal
+- Ajustes masivos por porcentaje o monto fijo
+- Filtros opcionales por categoría
 
-**Extensiones PostgreSQL:**
-- ✅ `unaccent` habilitada para búsquedas sin acentos
+**Endpoints a implementar:**
+- `GET /api/productos/precios/lista` - Listado con filtros
+- `PATCH /api/productos/precios/masivo` - Actualización masiva
 
-### Resumen de Archivos por Módulo
+**Componentes Frontend a crear:**
+- `GestionPreciosPage.tsx` - Página principal unificada
+- `ModalEditarPrecio.tsx` - Edición de precios individuales
+- `ModalAjusteMasivo.tsx` - Configuración de ajustes masivos
+- `usePrecios` hook - Integración con React Query
 
-**Módulo Ventas (14 archivos):**
-- Backend: `schema.prisma`, `productos.service.ts`, `ventas.service.ts`, `create-venta.dto.ts`
-- Frontend: `types.ts`, `useVentas.ts`, `NuevaVentaPage.tsx`, `DetalleVentaPage.tsx`, `ConfirmacionModal.tsx`
-- Scripts: 4 archivos de utilidad (check-tipos-cliente.js, reset-admin-password.js, etc.)
-- Docs: `CLAUDE.md`
+**Archivos Backend a crear/modificar:**
+- DTOs: `FiltrosPreciosDto`, `ActualizacionMasivaDto`
+- Service: métodos `getPreciosConFiltros()`, `actualizarPreciosMasivo()`
+- Controller: nuevos endpoints GET y PATCH
 
-**Módulo Auth (5 archivos protegidos):**
-- Backend: `auth.controller.ts`, `auth.service.ts`, `change-password.dto.ts`, `dto/index.ts`
-- Frontend: `LoginPage.tsx`
+### Módulo Clientes (Frontend)
+**Pendiente:** Interfaces de usuario para gestión de clientes (backend ya implementado)
 
-### Estado de Servidores
+**Páginas a crear:**
+- ListaClientesPage - Vista de todos los clientes
+- NuevoClientePage - Alta de cliente
+- EditarClientePage - Modificación de datos
+- DetalleClientePage - Visualización y cuenta corriente
 
-**Desarrollo:**
-- Backend: `http://localhost:3000`
-- Frontend: `http://localhost:5173`
-- API Docs: `http://localhost:3000/api/docs`
+### Módulo Compras
+**Pendiente:** Implementación completa de órdenes de compra, recepción y gestión de proveedores
 
-**Credenciales:**
-- Usuario: `vendedor@erp.com`
-- Contraseña: `vendedor123`
-
-### Próximos Pasos Sugeridos
-
-1. **Testing de integración:** Validar flujos completos de Login y Ventas
-2. **Push a remoto:** Subir rama `desarrollo` actualizada
-3. **Módulos pendientes:** Clientes (frontend), Compras, Reportes
-4. **Optimizaciones:** Implementar caché, mejorar performance de búsquedas
+### Módulo Reportes
+**Pendiente:** Dashboard con métricas, gráficos y exportación a PDF
