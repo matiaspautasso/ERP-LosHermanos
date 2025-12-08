@@ -13,12 +13,15 @@ interface AjusteMasivoModalProps {
   onSuccess?: () => void;
 }
 
+// Tipo extendido para incluir 'ambos' en el componente
+type TipoPrecioExtendido = TipoPrecio | 'ambos';
+
 export const AjusteMasivoModal: React.FC<AjusteMasivoModalProps> = ({
   productosSeleccionados,
   onClose,
   onSuccess
 }) => {
-  const [tipoPrecio, setTipoPrecio] = useState<TipoPrecio>('ambos');
+  const [tipoPrecio, setTipoPrecio] = useState<TipoPrecioExtendido>('ambos');
   const [porcentaje, setPorcentaje] = useState<string>('');
 
   const { data: todosLosProductos = [], isLoading } = useProductosConPrecios();
@@ -44,10 +47,13 @@ export const AjusteMasivoModal: React.FC<AjusteMasivoModalProps> = ({
       // Convertir IDs de string a number para el backend
       const productoIds = productosSeleccionados.map(id => parseInt(id, 10));
 
+      // Convertir 'ambos' a 'todos' para el backend
+      const tipoParaBackend: TipoPrecio = tipoPrecio === 'ambos' ? 'todos' : tipoPrecio as TipoPrecio;
+
       await ajusteMasivoMutation.mutateAsync({
         producto_ids: productoIds,
         porcentaje: parseFloat(porcentaje),
-        tipo: tipoPrecio,
+        tipo: tipoParaBackend,
       });
 
       // Reset form
@@ -63,7 +69,7 @@ export const AjusteMasivoModal: React.FC<AjusteMasivoModalProps> = ({
 
   const handleClose = () => {
     setPorcentaje('');
-    setTipoPrecio('ambos');
+    setTipoPrecio('ambos' as TipoPrecioExtendido);
     onClose();
   };
 
@@ -100,7 +106,7 @@ export const AjusteMasivoModal: React.FC<AjusteMasivoModalProps> = ({
                     name="tipoPrecio"
                     value="minorista"
                     checked={tipoPrecio === 'minorista'}
-                    onChange={(e) => setTipoPrecio(e.target.value as TipoPrecio)}
+                    onChange={(e) => setTipoPrecio(e.target.value as TipoPrecioExtendido)}
                     className="mr-3 w-4 h-4"
                   />
                   <DollarSign size={18} className="mr-2" />
@@ -112,7 +118,7 @@ export const AjusteMasivoModal: React.FC<AjusteMasivoModalProps> = ({
                     name="tipoPrecio"
                     value="mayorista"
                     checked={tipoPrecio === 'mayorista'}
-                    onChange={(e) => setTipoPrecio(e.target.value as TipoPrecio)}
+                    onChange={(e) => setTipoPrecio(e.target.value as TipoPrecioExtendido)}
                     className="mr-3 w-4 h-4"
                   />
                   <DollarSign size={18} className="mr-2" />
@@ -124,7 +130,7 @@ export const AjusteMasivoModal: React.FC<AjusteMasivoModalProps> = ({
                     name="tipoPrecio"
                     value="ambos"
                     checked={tipoPrecio === 'ambos'}
-                    onChange={(e) => setTipoPrecio(e.target.value as TipoPrecio)}
+                    onChange={(e) => setTipoPrecio(e.target.value as TipoPrecioExtendido)}
                     className="mr-3 w-4 h-4"
                   />
                   <DollarSign size={18} className="mr-2" />
