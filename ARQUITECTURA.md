@@ -19,28 +19,32 @@ ERP-LosHermanos/
 ├── backend/                    # Monorepo backend único
 │   ├── src/
 │   │   ├── modules/           # Módulos de negocio
-│   │   │   ├── auth/          # ✅ Módulo autenticación
-│   │   │   ├── clientes/      # 🔄 Próximo módulo  
-│   │   │   └── gestion-stock/ # ⏳ Módulo futuro
-│   │   ├── core/              # Servicios centrales (Prisma, etc)
+│   │   │   ├── auth/          # ✅ Autenticación (sesiones)
+│   │   │   ├── ventas/        # ✅ Gestión de ventas
+│   │   │   ├── productos/     # 🔄 Productos y precios (70%)
+│   │   │   ├── clientes/      # 🔄 Clientes (backend 100%)
+│   │   │   ├── compras/       # ⏳ Compras (estructura inicial)
+│   │   │   ├── proveedores/   # ⏳ Proveedores (estructura inicial)
+│   │   │   ├── email/         # 📧 Servicio de emails
+│   │   │   └── reportes/      # ⏳ Reportes (planificado)
+│   │   ├── core/              # Servicios centrales (PrismaService)
 │   │   └── shared/            # Decorators y utilidades compartidas
 │   └── prisma/                # Schema y migraciones
 │
 ├── frontend/                  # Monorepo frontend único
 │   ├── src/
 │   │   ├── modules/          # Módulos de negocio
-│   │   │   ├── auth/         # ✅ Módulo autenticación
-│   │   │   ├── clientes/     # 🔄 Próximo módulo
-│   │   │   └── gestion-stock/# ⏳ Módulo futuro
-│   │   ├── core/             # API client, store global
-│   │   └── shared/           # Componentes UI compartidos
+│   │   │   ├── auth/         # ✅ Autenticación completa
+│   │   │   ├── ventas/       # ✅ Ventas completo
+│   │   │   └── productos/    # 🔄 Gestión de precios
+│   │   ├── core/             # API client (axios), stores (zustand)
+│   │   └── shared/           # Componentes UI (shadcn/ui)
 │
 ├── database/                 # Scripts SQL y documentación BD
 └── docs/
     └── modulos/             # Documentación separada por módulo
         ├── 01-autenticacion/ # ✅ Docs módulo auth
-        ├── 02-clientes/      # 🔄 Docs próximo módulo
-        └── 03-gestion-stock/ # ⏳ Docs módulo futuro
+        └── ...
 ```
 
 ## ⚙️ STACK TECNOLÓGICO UNIFICADO
@@ -48,17 +52,17 @@ ERP-LosHermanos/
 ### **Backend (NestJS)**
 - **Framework:** NestJS + TypeScript
 - **ORM:** Prisma + PostgreSQL (Supabase)
-- **Auth:** JWT + Guards + bcrypt
-- **Email:** Nodemailer
-- **Testing:** Jest + Supertest
+- **Auth:** express-session + cookies httpOnly + bcrypt
+- **Email:** Nodemailer (usado en recuperación de contraseña)
+- **Testing:** Jest (configurado, sin tests implementados)
 
 ### **Frontend (React)**
 - **Framework:** React 18 + TypeScript
 - **Build:** Vite + SWC
 - **Styling:** TailwindCSS + shadcn/ui
-- **State:** Zustand
-- **HTTP:** Axios + React Query
-- **Testing:** Jest + Testing Library
+- **State:** Zustand (estado global), React Query (cache y sincronización)
+- **HTTP:** Axios (withCredentials: true para cookies)
+- **Testing:** Jest + Testing Library (configurado, sin tests implementados)
 
 ### **Database (PostgreSQL)**
 - **Provider:** Supabase
@@ -107,11 +111,13 @@ modules/[modulo]/
 
 ## 🔐 SEGURIDAD
 
-- **Autenticación:** JWT tokens con refresh
-- **Autorización:** Guards por endpoint
+- **Autenticación:** express-session con cookies httpOnly (expiración 24h)
+- **Autorización:** Guards por endpoint (NestJS)
 - **Validación:** DTOs con class-validator
-- **CORS:** Configurado para frontend específico
+- **Contraseñas:** Hasheadas con bcrypt (10 rondas)
+- **CORS:** Configurado para frontend específico con credenciales
 - **Environment:** Variables sensibles en .env
+- **Cookies:** sameSite: lax, secure en producción
 
 ## 📈 ESCALABILIDAD
 
