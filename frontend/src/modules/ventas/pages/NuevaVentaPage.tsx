@@ -22,7 +22,7 @@ export default function NuevaVentaPage() {
   const [productos, setProductos] = useState<ProductoVenta[]>([]);
   const [clienteId, setClienteId] = useState('');
   const [tipoVenta, setTipoVenta] = useState<'Minorista' | 'Mayorista' | 'Supermayorista'>('Minorista');
-  const [formaPago, setFormaPago] = useState<'Efectivo' | 'Tarjeta'>('Efectivo');
+  const [formaPago, setFormaPago] = useState<'Efectivo' | 'Tarjeta' | 'Transferencia'>('Efectivo');
   const [descuentoPorcentaje, setDescuentoPorcentaje] = useState<number | ''>('');
 
   const { data: clientes = [], isLoading: loadingClientes } = useClientes();
@@ -463,7 +463,7 @@ export default function NuevaVentaPage() {
                     name="tipoPago"
                     value="Efectivo"
                     checked={formaPago === 'Efectivo'}
-                    onChange={(e) => setFormaPago(e.target.value as 'Efectivo' | 'Tarjeta')}
+                    onChange={(e) => setFormaPago(e.target.value as 'Efectivo' | 'Tarjeta' | 'Transferencia')}
                     className="w-5 h-5 appearance-none rounded-full border-[2px] checked:border-[3px] outline-none cursor-pointer"
                     style={{
                       borderColor: formaPago === 'Efectivo' ? '#a03cea' : '#afa2c3',
@@ -487,7 +487,7 @@ export default function NuevaVentaPage() {
                     name="tipoPago"
                     value="Tarjeta"
                     checked={formaPago === 'Tarjeta'}
-                    onChange={(e) => setFormaPago(e.target.value as 'Efectivo' | 'Tarjeta')}
+                    onChange={(e) => setFormaPago(e.target.value as 'Efectivo' | 'Tarjeta' | 'Transferencia')}
                     className="w-5 h-5 appearance-none rounded-full border-[2px] checked:border-[3px] outline-none cursor-pointer"
                     style={{
                       borderColor: formaPago === 'Tarjeta' ? '#a03cea' : '#afa2c3',
@@ -501,6 +501,30 @@ export default function NuevaVentaPage() {
                 <span style={{ color: '#f1eef7' }}>
                   <span className="md:hidden">Tarj</span>
                   <span className="hidden md:inline">Tarjeta</span>
+                </span>
+              </label>
+
+              <label className="flex items-center gap-3 cursor-pointer">
+                <div className="relative">
+                  <input
+                    type="radio"
+                    name="tipoPago"
+                    value="Transferencia"
+                    checked={formaPago === 'Transferencia'}
+                    onChange={(e) => setFormaPago(e.target.value as 'Efectivo' | 'Tarjeta' | 'Transferencia')}
+                    className="w-5 h-5 appearance-none rounded-full border-[2px] checked:border-[3px] outline-none cursor-pointer"
+                    style={{
+                      borderColor: formaPago === 'Transferencia' ? '#a03cea' : '#afa2c3',
+                      background:
+                        formaPago === 'Transferencia'
+                          ? 'linear-gradient(135deg, #FB6564 0%, #A03CEA 100%)'
+                          : 'transparent',
+                    }}
+                  />
+                </div>
+                <span style={{ color: '#f1eef7' }}>
+                  <span className="md:hidden">Transf</span>
+                  <span className="hidden md:inline">Transferencia</span>
                 </span>
               </label>
             </div>

@@ -91,7 +91,6 @@ export class ProductosService {
         p.precio_lista,
         p.stock_actual,
         p.stock_minimo,
-        p.iva_porcentaje,
         p.descripcion,
         jsonb_build_object('id', c.id, 'nombre', c.nombre) as categorias,
         jsonb_build_object('id', u.id, 'nombre', u.nombre) as unidades

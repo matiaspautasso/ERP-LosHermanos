@@ -1,0 +1,21 @@
+{
+  "name": "erp-los-hermanos",
+  "version": "1.0.0",
+  "description": "ERP Los Hermanos - Monorepo con backend NestJS y frontend React",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"cd backend && npm install && npm run start:dev\" \"cd frontend && npm install && npm run dev\"",
+    "install:all": "concurrently \"cd backend && npm install\" \"cd frontend && npm install\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  },
+  "keywords": [
+    "erp",
+    "nestjs",
+    "react",
+    "monorepo"
+  ],
+  "author": "",
+  "license": "ISC"
+}

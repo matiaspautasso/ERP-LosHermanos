@@ -23,6 +23,7 @@ npm run start:dev        # Iniciar servidor dev en http://localhost:3000
 npm run build            # Compilar para producción
 npm run start:prod       # Ejecutar build de producción
 npm run lint             # Ejecutar ESLint con auto-corrección
+npm run format           # Formatear código con Prettier
 npm test                 # Tests (placeholder - sin tests implementados)
 
 # Comandos de Prisma
@@ -192,10 +193,33 @@ VITE_API_URL=http://localhost:3000/api
 
 **Nota importante:** Este proyecto usa database-first approach. Los cambios se hacen primero en PostgreSQL, luego se sincronizan con Prisma.
 
+**Datos de prueba:** El archivo `backend/prisma/seed.ts` contiene datos iniciales para desarrollo (usuarios, productos, clientes, etc.). Ejecutar con `npm run prisma:seed` desde `backend/`.
+
 ### Validación y Eventos
 
 - **Validación:** Usa `class-validator` en DTOs (`@IsString()`, `@IsOptional()`, `@Min()`, etc.)
 - **Eventos:** `@nestjs/event-emitter` en memoria, diseñado para escalar a RabbitMQ
+
+### Patrones de Comunicación Frontend-Backend
+
+**Capa de API (Frontend):**
+- Cada módulo tiene carpeta `api/` con archivo `[modulo]Service.ts`
+- Los servicios exportan funciones que llaman a axios configurado
+- Tipos TypeScript definidos en `api/types.ts` de cada módulo
+- Ejemplo: `ventasService.ts` exporta `crearVenta()`, `obtenerVentas()`, etc.
+
+**React Query Integration:**
+- Hooks personalizados encapsulan llamadas a React Query
+- Patrón: `use[Modulo].ts` en carpeta `hooks/` de cada módulo
+- Mutations para operaciones CREATE/UPDATE/DELETE
+- Queries para operaciones READ
+- Ejemplo: `useVentas.ts` exporta `useCrearVenta()`, `useListaVentas()`, etc.
+
+**Manejo de Errores:**
+- Backend retorna respuestas HTTP estándar con mensajes descriptivos
+- Interceptor de axios maneja errores 401 (redirección a login)
+- React Query maneja retry automático (configurado para 1 retry)
+- Componentes muestran errores mediante toasts (librería `sonner`)
 
 ## Flujos de Trabajo Comunes
 
@@ -223,9 +247,10 @@ VITE_API_URL=http://localhost:3000/api
 ### 🔄 Módulos en Desarrollo
 
 **Productos Module**
-- Backend: CRUD básico, búsqueda avanzada
-- Frontend: GestionPreciosPage (parcial)
+- Backend: CRUD básico, búsqueda avanzada, gestión de precios
+- Frontend: GestionPreciosPage (funcional, mejoras de UX pendientes)
 - Integrado con categorías, unidades y precios
+- Submódulo de Gestión de Precios accesible desde menú Ventas
 
 **Clientes Module**
 - Backend: CRUD completo
@@ -257,32 +282,23 @@ VITE_API_URL=http://localhost:3000/api
 ### Extensiones PostgreSQL Habilitadas
 - `unaccent` - Búsquedas sin distinguir acentos (ej: "cafe" encuentra "café")
 
-## Cambios Recientes (Diciembre 2025)
+## Características del Sistema
 
-### Rama Actual: `desarrollo`
+**Módulo de Ventas:**
+- Modal de confirmación al cambiar cliente durante creación de venta
+- Formulario permanece abierto después de crear venta (UX optimizada para ventas consecutivas)
+- Validación de cliente antes de agregar productos
+- Sistema sin IVA (eliminado del sistema)
+- Tipo de venta bloqueado automáticamente según cliente seleccionado
+- Búsqueda de productos sin distinguir acentos (PostgreSQL `unaccent`)
+- Soporte para tipo "Supermayorista"
 
-**Mejoras al Módulo de Ventas (9 cambios implementados):**
-1. Modal de confirmación al cambiar cliente
-2. Formulario se mantiene abierto después de crear venta
-3. Campo descuento acepta valores vacíos
-4. Validación de cliente antes de agregar productos
-5. Campo cantidad acepta valores vacíos durante edición
-6. Eliminación completa del IVA del sistema
-7. Bloqueo automático de tipo de venta al seleccionar cliente
-8. Búsqueda de productos sin distinguir acentos
-9. Modal de búsqueda permanece abierto al agregar productos
+**Módulo de Auth:**
+- Cambio de contraseña desde login
+- Recuperación de contraseña por email
 
-**Mejoras al Módulo de Auth:**
-- Funcionalidad de cambio de contraseña desde login
-- Botón de registro restaurado en página de login
-
-**Cambios en Base de Datos:**
-- Campo `iva_porcentaje` eliminado de tabla `detalle_venta`
-- Campo `precio_supermayorista` agregado a tabla `precios` (Decimal 12,2, default 0)
-- VARCHAR ampliado a 20 caracteres en campos `tipo` y `tipo_venta`
-
-**Componentes Nuevos:**
-- `ConfirmacionModal.tsx` - Modal reutilizable de confirmación
+**Componentes Compartidos:**
+- `ConfirmacionModal.tsx` - Modal reutilizable de confirmación en `frontend/src/shared/components/`
 
 ## Convenciones de Código
 
@@ -307,30 +323,19 @@ VITE_API_URL=http://localhost:3000/api
 ## Implementaciones Futuras Planificadas
 
 ### Gestión de Precios (Submódulo de Ventas)
-**Objetivo:** Interfaz unificada para visualización, edición individual y ajustes masivos de precios.
+**Estado:** Backend ✅ | Frontend ⚠️ (funcional, mejoras pendientes)
 
-**Enfoque UX:** Pantalla única sin navegación entre vistas separadas.
+**Implementado:**
+- Endpoints: `GET /api/productos/precios/lista`, `PUT /api/productos/:id/precios`, `PATCH /api/productos/precios/masivo`
+- Hooks: `usePrecios.ts` con React Query
+- Componentes: `GestionPreciosPage`, `ModalEditarPrecio`, `ModalAjusteMasivo`
+- Navegación integrada en Sidebar (Ventas → Gestión Precios)
 
-**Funcionalidad principal:**
-- Tabla con filtros por tipo de precio (Minorista/Mayorista/Supermayorista) y búsqueda
-- Edición individual mediante modal
-- Ajustes masivos por porcentaje o monto fijo
-- Filtros opcionales por categoría
-
-**Endpoints a implementar:**
-- `GET /api/productos/precios/lista` - Listado con filtros
-- `PATCH /api/productos/precios/masivo` - Actualización masiva
-
-**Componentes Frontend a crear:**
-- `GestionPreciosPage.tsx` - Página principal unificada
-- `ModalEditarPrecio.tsx` - Edición de precios individuales
-- `ModalAjusteMasivo.tsx` - Configuración de ajustes masivos
-- `usePrecios` hook - Integración con React Query
-
-**Archivos Backend a crear/modificar:**
-- DTOs: `FiltrosPreciosDto`, `ActualizacionMasivaDto`
-- Service: métodos `getPreciosConFiltros()`, `actualizarPreciosMasivo()`
-- Controller: nuevos endpoints GET y PATCH
+**Pendiente (mejoras de interfaz):**
+- Optimización de UX en filtros y tabla
+- Validaciones adicionales de formularios
+- Feedback visual mejorado
+- Indicadores de carga y estados
 
 ### Módulo Clientes (Frontend)
 **Pendiente:** Interfaces de usuario para gestión de clientes (backend ya implementado)

@@ -14,6 +14,35 @@ export default function ListaVentasPage() {
 
   const { data: ventas = [], isLoading } = useVentasList(filtros);
 
+  const getTipoBadgeColor = (tipo: string) => {
+    switch (tipo.toLowerCase()) {
+      case 'minorista':
+        return {
+          background: 'rgba(66, 153, 225, 0.2)',
+          color: '#4299e1',
+          border: '#4299e1',
+        };
+      case 'mayorista':
+        return {
+          background: 'rgba(72, 187, 120, 0.2)',
+          color: '#48bb78',
+          border: '#48bb78',
+        };
+      case 'supermayorista':
+        return {
+          background: 'rgba(160, 60, 234, 0.2)',
+          color: '#a03cea',
+          border: '#a03cea',
+        };
+      default:
+        return {
+          background: 'rgba(251, 101, 100, 0.2)',
+          color: '#FB6564',
+          border: '#FB6564',
+        };
+    }
+  };
+
   return (
     <DashboardLayout title="Lista de Ventas" subtitle="Historial de ventas realizadas">
       <div className="p-8">
@@ -105,6 +134,9 @@ export default function ListaVentasPage() {
                 <option value="Mayorista" style={{ background: '#2c5b2d' }}>
                   Mayorista
                 </option>
+                <option value="Supermayorista" style={{ background: '#2c5b2d' }}>
+                  Supermayorista
+                </option>
               </select>
             </div>
           </div>
@@ -181,14 +213,9 @@ export default function ListaVentasPage() {
                         <span
                           className="px-3 py-1 rounded-full text-sm"
                           style={{
-                            background:
-                              venta.tipo_venta === 'Mayorista'
-                                ? 'rgba(160, 60, 234, 0.2)'
-                                : 'rgba(251, 101, 100, 0.2)',
-                            color: venta.tipo_venta === 'Mayorista' ? '#a03cea' : '#FB6564',
-                            border: `2px solid ${
-                              venta.tipo_venta === 'Mayorista' ? '#a03cea' : '#FB6564'
-                            }`,
+                            background: getTipoBadgeColor(venta.tipo_venta).background,
+                            color: getTipoBadgeColor(venta.tipo_venta).color,
+                            border: `2px solid ${getTipoBadgeColor(venta.tipo_venta).border}`,
                           }}
                         >
                           {venta.tipo_venta}

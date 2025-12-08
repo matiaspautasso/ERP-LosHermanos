@@ -34,11 +34,11 @@ export class CreateVentaDto {
   @ApiProperty({
     description: 'Forma de pago',
     example: 'Efectivo',
-    enum: ['Efectivo', 'Tarjeta'],
+    enum: ['Efectivo', 'Tarjeta', 'Transferencia'],
   })
   @IsString()
-  @IsIn(['Efectivo', 'Tarjeta'], {
-    message: 'La forma de pago debe ser Efectivo o Tarjeta',
+  @IsIn(['Efectivo', 'Tarjeta', 'Transferencia'], {
+    message: 'La forma de pago debe ser Efectivo, Tarjeta o Transferencia',
   })
   forma_pago: string;
 
