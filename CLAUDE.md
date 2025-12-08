@@ -291,7 +291,9 @@ VITE_API_URL=http://localhost:3000/api
 - Sistema sin IVA (eliminado del sistema)
 - Tipo de venta bloqueado automáticamente según cliente seleccionado
 - Búsqueda de productos sin distinguir acentos (PostgreSQL `unaccent`)
-- Soporte para tipo "Supermayorista"
+- Soporte para tipo "Supermayorista" con badge morado en Lista Ventas
+- Formas de pago: Efectivo, Tarjeta, Transferencia
+- Filtros por categoría corregidos (eliminada referencia a campo iva_porcentaje obsoleto)
 
 **Módulo de Auth:**
 - Cambio de contraseña desde login
