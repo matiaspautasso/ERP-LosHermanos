@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ventasService } from '../api/ventasService';
 import { clientesService } from '../api/clientesService';
@@ -7,7 +6,6 @@ import { productosService } from '../api/productosService';
 import { CreateVentaRequest, VentaFilters } from '../api/types';
 
 export function useVentas(onSuccess?: () => void) {
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   // Mutation para crear venta

@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" \"postgresql://postgres.rfhizunlwvoemvlscbqg:Fpxybq7IxyXjKHJU@aws-1-sa-east-1.pooler.supabase.com:5432/postgres\" -c \"SELECT p.id, p.nombre, p.categoria_id, c.nombre as categoria FROM productos p JOIN categorias c ON p.categoria_id = c.id WHERE p.activo = true ORDER BY c.nombre, p.nombre LIMIT 20;\")",
-      "Bash(git merge:*)"
+      "Bash(git merge:*)",
+      "Bash(git checkout:*)",
+      "Bash(git branch:*)",
+      "Bash(git worktree:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []
