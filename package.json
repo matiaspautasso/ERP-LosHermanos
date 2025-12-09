@@ -17,5 +17,8 @@
     "monorepo"
   ],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "jspdf-autotable": "^5.0.2"
+  }
 }

@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
-import { DollarSign, Edit } from 'lucide-react';
+import { DollarSign, Edit, FileDown } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { useProductosConPrecios, useUpdatePrecio, useAjusteMasivo } from '../hooks/usePrecios';
 import { useCategorias } from '../hooks/useVentas';
@@ -82,6 +83,38 @@ export default function GestionPreciosPage() {
   // Limpiar filtros
   const limpiarFiltros = () => {
     setFiltros({ nombre: '', categoria: '' });
+  };
+
+  // Exportar a Excel
+  const exportarAExcel = () => {
+    if (productosFiltrados.length === 0) {
+      console.warn('No hay productos para exportar');
+      return;
+    }
+
+    // Preparar datos para Excel
+    const datosExcel = productosFiltrados.map((producto) => ({
+      Producto: producto.nombre,
+      Categoría: producto.categoria,
+      Minorista: `$${Number(producto.precio_minorista).toFixed(2)}`,
+      Mayorista: `$${Number(producto.precio_mayorista).toFixed(2)}`,
+      Supermayorista: `$${Number(producto.precio_supermayorista).toFixed(2)}`,
+    }));
+
+    // Crear libro de trabajo
+    const worksheet = XLSX.utils.json_to_sheet(datosExcel);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Precios');
+
+    // Generar nombre de archivo con fecha actual
+    const fecha = new Date();
+    const dia = String(fecha.getDate()).padStart(2, '0');
+    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+    const año = fecha.getFullYear();
+    const nombreArchivo = `precios_${dia}-${mes}-${año}.xlsx`;
+
+    // Descargar archivo
+    XLSX.writeFile(workbook, nombreArchivo);
   };
 
   return (
@@ -179,24 +212,53 @@ export default function GestionPreciosPage() {
               Productos ({productosFiltrados.length})
             </h3>
 
-            <button
-              onClick={() => setModalAjusteMasivoAbierto(true)}
-              className="px-4 py-2 rounded-lg transition-all flex items-center gap-2"
-              style={{
-                background: 'linear-gradient(135deg, #FB6564 0%, #A03CEA 100%)',
-                color: '#fff',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(135deg, #fa4a49 0%, #8f2bd1 100%)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(135deg, #FB6564 0%, #A03CEA 100%)';
-              }}
-            >
-              <DollarSign size={18} />
-              Ajuste Masivo
-              {productosSeleccionados.length > 0 && ` (${productosSeleccionados.length})`}
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={exportarAExcel}
+                disabled={productosFiltrados.length === 0}
+                className="px-4 py-2 rounded-lg transition-all flex items-center gap-2"
+                style={{
+                  background: productosFiltrados.length === 0
+                    ? '#4a5568'
+                    : 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)',
+                  color: '#fff',
+                  opacity: productosFiltrados.length === 0 ? 0.6 : 1,
+                  cursor: productosFiltrados.length === 0 ? 'not-allowed' : 'pointer',
+                }}
+                onMouseEnter={(e) => {
+                  if (productosFiltrados.length > 0) {
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #38a169 0%, #2f855a 100%)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (productosFiltrados.length > 0) {
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)';
+                  }
+                }}
+              >
+                <FileDown size={18} />
+                Exportar Excel
+              </button>
+
+              <button
+                onClick={() => setModalAjusteMasivoAbierto(true)}
+                className="px-4 py-2 rounded-lg transition-all flex items-center gap-2"
+                style={{
+                  background: 'linear-gradient(135deg, #FB6564 0%, #A03CEA 100%)',
+                  color: '#fff',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'linear-gradient(135deg, #fa4a49 0%, #8f2bd1 100%)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'linear-gradient(135deg, #FB6564 0%, #A03CEA 100%)';
+                }}
+              >
+                <DollarSign size={18} />
+                Ajuste Masivo
+                {productosSeleccionados.length > 0 && ` (${productosSeleccionados.length})`}
+              </button>
+            </div>
           </div>
 
           {isLoading ? (

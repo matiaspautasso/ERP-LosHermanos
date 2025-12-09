@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Eye } from 'lucide-react';
+import { Eye, FileDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { useVentasList } from '../hooks/useVentas';
+import * as XLSX from 'xlsx';
 
 export default function ListaVentasPage() {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ export default function ListaVentasPage() {
     hasta: '',
     tipo_venta: '',
   });
+  const [ordenFecha, setOrdenFecha] = useState<'asc' | 'desc'>('desc');
 
   const { data: ventas = [], isLoading } = useVentasList(filtros);
 
@@ -30,9 +32,9 @@ export default function ListaVentasPage() {
         };
       case 'supermayorista':
         return {
-          background: 'rgba(160, 60, 234, 0.2)',
-          color: '#a03cea',
-          border: '#a03cea',
+          background: 'rgba(255, 159, 28, 0.2)',
+          color: '#ff9f1c',
+          border: '#ff9f1c',
         };
       default:
         return {
@@ -42,6 +44,55 @@ export default function ListaVentasPage() {
         };
     }
   };
+
+  const exportarAExcel = () => {
+    if (!ventas || ventas.length === 0) return;
+
+    const datosExcel = ventas.map((venta) => ({
+      'N° Venta': `#${venta.id}`,
+      'Fecha': new Date(venta.fecha).toLocaleDateString(),
+      'Cliente': venta.cliente,
+      'Total': `${Number(venta.total).toFixed(2)}`,
+      'Tipo': venta.tipo_venta,
+      'Pago': venta.forma_pago,
+    }));
+
+    // 1) Crear hoja y libro
+    const ws = XLSX.utils.json_to_sheet(datosExcel);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Ventas');
+
+    // 2) Escribir libro en binario (array buffer)
+    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+
+    // 3) Crear Blob con MIME de Excel
+    const blob = new Blob([excelBuffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+
+    // 4) Crear URL temporal y disparar descarga
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+
+    const fecha = new Date();
+    const dia = String(fecha.getDate()).padStart(2, '0');
+    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+    const anio = fecha.getFullYear();
+
+    link.download = `ventas_${dia}-${mes}-${anio}.xlsx`;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const ventasOrdenadas = [...ventas].sort((a, b) => {
+    const fechaA = new Date(a.fecha).getTime();
+    const fechaB = new Date(b.fecha).getTime();
+    return ordenFecha === 'asc' ? fechaA - fechaB : fechaB - fechaA;
+  });
 
   return (
     <DashboardLayout title="Lista de Ventas" subtitle="Historial de ventas realizadas">
@@ -138,6 +189,32 @@ export default function ListaVentasPage() {
                   Supermayorista
                 </option>
               </select>
+              <button
+                onClick={exportarAExcel}
+                disabled={ventas.length === 0}
+                className="w-full mt-4 px-4 py-2.5 rounded-lg transition-all flex items-center justify-center gap-2"
+                style={{
+                  background: ventas.length === 0
+                    ? 'rgba(175, 162, 195, 0.3)'
+                    : 'linear-gradient(135deg, #FB6564 0%, #A03CEA 100%)',
+                  color: '#fff',
+                  opacity: ventas.length === 0 ? 0.5 : 1,
+                  cursor: ventas.length === 0 ? 'not-allowed' : 'pointer',
+                }}
+                onMouseEnter={(e) => {
+                  if (ventas.length > 0) {
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #fa4a49 0%, #8f2bd1 100%)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (ventas.length > 0) {
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #FB6564 0%, #A03CEA 100%)';
+                  }
+                }}
+              >
+                <FileDown size={18} />
+                Exportar
+              </button>
             </div>
           </div>
         </div>
@@ -169,7 +246,17 @@ export default function ListaVentasPage() {
                       <span className="hidden md:inline">N° Venta</span>
                     </th>
                     <th className="text-left py-3 px-8" style={{ color: '#fefbe4' }}>
-                      Fecha
+                      <div className="flex items-center gap-2">
+                        Fecha
+                        <button
+                          onClick={() => setOrdenFecha(ordenFecha === 'asc' ? 'desc' : 'asc')}
+                          className="p-1 rounded hover:bg-[rgba(255,255,255,0.1)] transition-all"
+                          style={{ color: '#afa2c3' }}
+                          title={ordenFecha === 'asc' ? 'Ordenar descendente' : 'Ordenar ascendente'}
+                        >
+                          {ordenFecha === 'asc' ? <ArrowUp size={16} /> : <ArrowDown size={16} />}
+                        </button>
+                      </div>
                     </th>
                     <th className="text-left py-3 px-8" style={{ color: '#fefbe4' }}>
                       <span className="md:hidden">Cte</span>
@@ -191,7 +278,7 @@ export default function ListaVentasPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {ventas.map((venta) => (
+                  {ventasOrdenadas.map((venta) => (
                     <tr
                       key={venta.id}
                       className="border-b-[2px] hover:bg-[rgba(255,255,255,0.05)]"
