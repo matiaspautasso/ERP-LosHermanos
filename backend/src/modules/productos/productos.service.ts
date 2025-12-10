@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '@/core/prisma/prisma.service';
-import { UpdatePrecioDto, AjusteMasivoDto, TipoPrecio } from './dto';
+import { UpdatePrecioDto, AjusteMasivoDto, TipoPrecio, HistorialPreciosQueryDto } from './dto';
 
 @Injectable()
 export class ProductosService {
@@ -212,6 +212,7 @@ export class ProductosService {
 
   /**
    * Actualizar precios de un producto específico
+   * MODELO INMUTABLE: Siempre crea un nuevo registro en lugar de actualizar
    */
   async updatePrecio(productoId: bigint, updatePrecioDto: UpdatePrecioDto, usuarioId: bigint) {
     const producto = await this.prisma.productos.findUnique({
@@ -222,36 +223,17 @@ export class ProductosService {
       throw new NotFoundException(`Producto con ID ${productoId} no encontrado`);
     }
 
-    // Buscar si ya existe un registro de precios para este producto
-    const precioExistente = await this.prisma.precios.findFirst({
-      where: { producto_id: productoId },
+    // MODELO INMUTABLE: Siempre crear nuevo registro
+    // Esto genera historial automático en la tabla precios
+    const precio = await this.prisma.precios.create({
+      data: {
+        producto_id: productoId,
+        precio_minorista: updatePrecioDto.precio_minorista,
+        precio_mayorista: updatePrecioDto.precio_mayorista,
+        precio_supermayorista: updatePrecioDto.precio_supermayorista,
+        usuario_id: usuarioId,
+      },
     });
-
-    let precio;
-    if (precioExistente) {
-      // Actualizar precio existente
-      precio = await this.prisma.precios.update({
-        where: { id: precioExistente.id },
-        data: {
-          precio_minorista: updatePrecioDto.precio_minorista,
-          precio_mayorista: updatePrecioDto.precio_mayorista,
-          precio_supermayorista: updatePrecioDto.precio_supermayorista,
-          usuario_id: usuarioId,
-          ultima_modificacion: new Date(),
-        },
-      });
-    } else {
-      // Crear nuevo registro de precios
-      precio = await this.prisma.precios.create({
-        data: {
-          producto_id: productoId,
-          precio_minorista: updatePrecioDto.precio_minorista,
-          precio_mayorista: updatePrecioDto.precio_mayorista,
-          precio_supermayorista: updatePrecioDto.precio_supermayorista,
-          usuario_id: usuarioId,
-        },
-      });
-    }
 
     return {
       message: 'Precios actualizados correctamente',
@@ -288,62 +270,55 @@ export class ProductosService {
     // Calcular factor de ajuste
     const factor = 1 + porcentaje / 100;
 
-    // Realizar ajustes en transacción
+    // MODELO INMUTABLE: Realizar ajustes en transacción
+    // Cada ajuste crea un nuevo registro en lugar de actualizar
     const resultados = await this.prisma.$transaction(
       productos.map((producto) => {
         const precioActual = producto.precios[0];
 
-        // Calcular nuevos precios
-        let nuevoMinorista: number;
-        let nuevoMayorista: number;
-        let nuevoSupermayorista: number;
+        // Calcular precios base (actuales o precio_lista)
+        let baseMinorista: number;
+        let baseMayorista: number;
+        let baseSupermayorista: number;
 
         if (precioActual) {
-          nuevoMinorista = Number(precioActual.precio_minorista) * factor;
-          nuevoMayorista = Number(precioActual.precio_mayorista) * factor;
-          nuevoSupermayorista = Number(precioActual.precio_supermayorista) * factor;
+          baseMinorista = Number(precioActual.precio_minorista);
+          baseMayorista = Number(precioActual.precio_mayorista);
+          baseSupermayorista = Number(precioActual.precio_supermayorista);
         } else {
           // Si no tiene precios configurados, usar precio_lista como base
-          nuevoMinorista = Number(producto.precio_lista) * factor;
-          nuevoMayorista = Number(producto.precio_lista) * factor;
-          nuevoSupermayorista = Number(producto.precio_lista) * factor;
+          baseMinorista = Number(producto.precio_lista);
+          baseMayorista = Number(producto.precio_lista);
+          baseSupermayorista = Number(producto.precio_lista);
         }
 
-        // Aplicar ajuste según el tipo
-        const datosActualizacion: any = {
-          usuario_id: usuarioId,
-          ultima_modificacion: new Date(),
-        };
+        // Aplicar ajuste según el tipo solicitado
+        let nuevoMinorista = baseMinorista;
+        let nuevoMayorista = baseMayorista;
+        let nuevoSupermayorista = baseSupermayorista;
 
         if (tipo === TipoPrecio.MINORISTA || tipo === TipoPrecio.TODOS) {
-          datosActualizacion.precio_minorista = nuevoMinorista;
+          nuevoMinorista = baseMinorista * factor;
         }
 
         if (tipo === TipoPrecio.MAYORISTA || tipo === TipoPrecio.TODOS) {
-          datosActualizacion.precio_mayorista = nuevoMayorista;
+          nuevoMayorista = baseMayorista * factor;
         }
 
         if (tipo === TipoPrecio.SUPERMAYORISTA || tipo === TipoPrecio.TODOS) {
-          datosActualizacion.precio_supermayorista = nuevoSupermayorista;
+          nuevoSupermayorista = baseSupermayorista * factor;
         }
 
-        // Actualizar o crear registro de precios
-        if (precioActual) {
-          return this.prisma.precios.update({
-            where: { id: precioActual.id },
-            data: datosActualizacion,
-          });
-        } else {
-          return this.prisma.precios.create({
-            data: {
-              producto_id: producto.id,
-              precio_minorista: nuevoMinorista,
-              precio_mayorista: nuevoMayorista,
-              precio_supermayorista: nuevoSupermayorista,
-              usuario_id: usuarioId,
-            },
-          });
-        }
+        // MODELO INMUTABLE: Siempre crear nuevo registro
+        return this.prisma.precios.create({
+          data: {
+            producto_id: producto.id,
+            precio_minorista: nuevoMinorista,
+            precio_mayorista: nuevoMayorista,
+            precio_supermayorista: nuevoSupermayorista,
+            usuario_id: usuarioId,
+          },
+        });
       }),
     );
 
@@ -351,5 +326,63 @@ export class ProductosService {
       message: `Se ajustaron ${resultados.length} productos correctamente`,
       productos_actualizados: resultados.length,
     };
+  }
+
+  /**
+   * Obtener historial de cambios de precios de un producto
+   */
+  async getHistorialPrecios(productoId: bigint, query: HistorialPreciosQueryDto) {
+    // Verificar que el producto existe
+    const producto = await this.prisma.productos.findUnique({
+      where: { id: productoId },
+      select: { id: true, nombre: true },
+    });
+
+    if (!producto) {
+      throw new NotFoundException(`Producto con ID ${productoId} no encontrado`);
+    }
+
+    // Construir filtros de fecha
+    const whereConditions: any = {
+      producto_id: productoId,
+    };
+
+    if (query.fechaInicio || query.fechaFin) {
+      whereConditions.ultima_modificacion = {};
+
+      if (query.fechaInicio) {
+        whereConditions.ultima_modificacion.gte = new Date(query.fechaInicio);
+      }
+
+      if (query.fechaFin) {
+        whereConditions.ultima_modificacion.lte = new Date(query.fechaFin);
+      }
+    }
+
+    // Obtener historial de precios
+    const historial = await this.prisma.precios.findMany({
+      where: whereConditions,
+      include: {
+        user: {
+          select: {
+            username: true,
+          },
+        },
+      },
+      orderBy: {
+        ultima_modificacion: 'desc',
+      },
+      take: query.limite || 50,
+    });
+
+    // Formatear respuesta
+    return historial.map((precio) => ({
+      id: precio.id,
+      fecha: precio.ultima_modificacion,
+      usuario: precio.user.username,
+      precio_minorista: precio.precio_minorista,
+      precio_mayorista: precio.precio_mayorista,
+      precio_supermayorista: precio.precio_supermayorista,
+    }));
   }
 }

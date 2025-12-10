@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { preciosService } from '../api/preciosService';
-import { UpdatePrecioRequest, AjusteMasivoRequest } from '../api/types';
+import { UpdatePrecioRequest, AjusteMasivoRequest, HistorialPreciosParams } from '../api/types';
 
 export function useProductosConPrecios() {
   return useQuery({
@@ -40,5 +40,13 @@ export function useAjusteMasivo() {
       const message = error.response?.data?.message || 'Error al realizar ajuste masivo';
       toast.error(message);
     },
+  });
+}
+
+export function useHistorialPrecios(productoId: string, params?: HistorialPreciosParams) {
+  return useQuery({
+    queryKey: ['historial-precios', productoId, params],
+    queryFn: () => preciosService.getHistorialPrecios(productoId, params),
+    enabled: !!productoId,
   });
 }

@@ -149,3 +149,18 @@ export interface AjusteMasivoResponse {
   message: string;
   productos_actualizados: number;
 }
+
+export interface HistorialPrecio {
+  id: string;
+  fecha: string;
+  usuario: string;
+  precio_minorista: number;
+  precio_mayorista: number;
+  precio_supermayorista: number;
+}
+
+export interface HistorialPreciosParams {
+  fechaInicio?: string;
+  fechaFin?: string;
+  limite?: number;
+}

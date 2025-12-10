@@ -5,6 +5,8 @@ import {
   UpdatePrecioResponse,
   AjusteMasivoRequest,
   AjusteMasivoResponse,
+  HistorialPrecio,
+  HistorialPreciosParams,
 } from './types';
 
 export const preciosService = {
@@ -28,6 +30,17 @@ export const preciosService = {
     const response = await apiClient.patch<AjusteMasivoResponse>(
       '/productos/precios/masivo',
       data
+    );
+    return response.data;
+  },
+
+  async getHistorialPrecios(
+    productoId: string,
+    params?: HistorialPreciosParams
+  ): Promise<HistorialPrecio[]> {
+    const response = await apiClient.get<HistorialPrecio[]>(
+      `/productos/${productoId}/precios/historial`,
+      { params }
     );
     return response.data;
   },

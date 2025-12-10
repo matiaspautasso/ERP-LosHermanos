@@ -6,7 +6,16 @@
       "Bash(git checkout:*)",
       "Bash(git branch:*)",
       "Bash(git worktree:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx prisma format:*)",
+      "Bash(cat:*)",
+      "Bash(npx prisma:*)",
+      "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" \"postgresql://postgres.rfhizunlwvoemvlscbqg:Fpxybq7IxyXjKHJU@aws-1-sa-east-1.pooler.supabase.com:5432/postgres\" -c \"CREATE INDEX IF NOT EXISTS ix_precios_producto_fecha ON precios(producto_id, ultima_modificacion DESC); COMMENT ON INDEX ix_precios_producto_fecha IS ''Índice optimizado para obtener precio actual por producto (ORDER BY + LIMIT 1)'';\")",
+      "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" \"postgresql://postgres.rfhizunlwvoemvlscbqg:Fpxybq7IxyXjKHJU@aws-1-sa-east-1.pooler.supabase.com:5432/postgres\" -c \"CREATE INDEX IF NOT EXISTS ix_precios_producto_fecha ON precios(producto_id, ultima_modificacion DESC); COMMENT ON INDEX ix_precios_producto_fecha IS ''Indice optimizado para obtener precio actual por producto (ORDER BY + LIMIT 1)'';\")",
+      "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" \"postgresql://postgres.rfhizunlwvoemvlscbqg:Fpxybq7IxyXjKHJU@aws-1-sa-east-1.pooler.supabase.com:5432/postgres\" -c \"COMMENT ON INDEX ix_precios_producto_fecha IS ''Indice optimizado para obtener precio actual por producto (ORDER BY + LIMIT 1)'';\")",
+      "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" \"postgresql://postgres.rfhizunlwvoemvlscbqg:Fpxybq7IxyXjKHJU@aws-1-sa-east-1.pooler.supabase.com:5432/postgres\" -c \"SELECT obj_description(''ix_precios_producto_fecha''::regclass, ''pg_class'');\")",
+      "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\" \"postgresql://postgres.rfhizunlwvoemvlscbqg:Fpxybq7IxyXjKHJU@aws-1-sa-east-1.pooler.supabase.com:5432/postgres\" -c \"SELECT COUNT(*) as total_precios, COUNT(DISTINCT producto_id) as productos_con_precios FROM precios;\")"
     ],
     "deny": [],
     "ask": []

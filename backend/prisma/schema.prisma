@@ -172,6 +172,7 @@ model precios {
 
   @@index([producto_id], map: "ix_precios_producto")
   @@index([ultima_modificacion], map: "ix_precios_ult")
+  @@index([producto_id, ultima_modificacion(sort: Desc)], map: "ix_precios_producto_fecha")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.

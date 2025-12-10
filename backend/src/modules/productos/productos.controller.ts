@@ -1,7 +1,7 @@
 import { Controller, Get, Param, Query, Put, Patch, Body, UseGuards, Session } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { ProductosService } from './productos.service';
-import { UpdatePrecioDto, AjusteMasivoDto } from './dto';
+import { UpdatePrecioDto, AjusteMasivoDto, HistorialPreciosQueryDto } from './dto';
 import { AuthGuard } from '@/shared/guards/auth.guard';
 import { Session as ExpressSession } from 'express-session';
 
@@ -64,5 +64,18 @@ export class ProductosController {
     @Session() session: ExpressSession & { user?: { id: bigint } },
   ) {
     return this.productosService.updatePrecio(BigInt(id), updatePrecioDto, session.user!.id);
+  }
+
+  @Get(':id/precios/historial')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Obtener historial de cambios de precios de un producto' })
+  @ApiQuery({ name: 'fechaInicio', required: false, description: 'Fecha inicio del filtro (ISO 8601)' })
+  @ApiQuery({ name: 'fechaFin', required: false, description: 'Fecha fin del filtro (ISO 8601)' })
+  @ApiQuery({ name: 'limite', required: false, description: 'Número máximo de registros (default: 50)' })
+  async getHistorialPrecios(
+    @Param('id') id: string,
+    @Query() query: HistorialPreciosQueryDto,
+  ) {
+    return this.productosService.getHistorialPrecios(BigInt(id), query);
   }
 }

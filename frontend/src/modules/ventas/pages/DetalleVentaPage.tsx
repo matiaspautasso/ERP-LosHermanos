@@ -21,9 +21,9 @@ export default function DetalleVentaPage() {
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
     // 🎨 Colores institucionales
-    const colorVerde = [44, 91, 45]; // #2C5B2D
-    const colorCrema = [254, 251, 228]; // #FEFBE4
-    const colorRojo = [136, 21, 19]; // #881513
+    const colorVerde: [number, number, number] = [44, 91, 45]; // #2C5B2D
+    const colorCrema: [number, number, number] = [254, 251, 228]; // #FEFBE4
+    const colorRojo: [number, number, number] = [136, 21, 19]; // #881513
 
     const pageWidth = 210;
     const pageHeight = 297;

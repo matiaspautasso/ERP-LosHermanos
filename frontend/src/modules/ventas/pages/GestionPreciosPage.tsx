@@ -1,11 +1,12 @@
 import { useState, useMemo } from 'react';
-import { DollarSign, Edit, FileDown } from 'lucide-react';
+import { DollarSign, Edit, FileDown, History } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { useProductosConPrecios, useUpdatePrecio, useAjusteMasivo } from '../hooks/usePrecios';
 import { useCategorias } from '../hooks/useVentas';
 import { ModalEditarPrecio } from '../components/ModalEditarPrecio';
 import { ModalAjusteMasivo } from '../components/ModalAjusteMasivo';
+import ModalHistorialPrecios from '../components/ModalHistorialPrecios';
 import { ProductoConPrecios } from '../api/types';
 
 export default function GestionPreciosPage() {
@@ -16,6 +17,7 @@ export default function GestionPreciosPage() {
   const [productosSeleccionados, setProductosSeleccionados] = useState<string[]>([]);
   const [productoEditando, setProductoEditando] = useState<ProductoConPrecios | null>(null);
   const [modalAjusteMasivoAbierto, setModalAjusteMasivoAbierto] = useState(false);
+  const [productoHistorial, setProductoHistorial] = useState<ProductoConPrecios | null>(null);
 
   const { data: productos = [], isLoading } = useProductosConPrecios();
   const { data: categorias = [] } = useCategorias();
@@ -332,23 +334,43 @@ export default function GestionPreciosPage() {
                       <td className="py-3 px-4 text-right font-mono" style={{ color: '#a78bfa' }}>
                         ${Number(producto.precio_supermayorista).toFixed(2)}
                       </td>
-                      <td className="py-3 px-4 text-center">
-                        <button
-                          onClick={() => setProductoEditando(producto)}
-                          className="p-2 rounded-lg transition-all"
-                          style={{
-                            color: '#a03cea',
-                            background: 'rgba(160, 60, 234, 0.1)',
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'rgba(160, 60, 234, 0.2)';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'rgba(160, 60, 234, 0.1)';
-                          }}
-                        >
-                          <Edit size={18} />
-                        </button>
+                      <td className="py-3 px-4">
+                        <div className="flex gap-2 justify-center">
+                          <button
+                            onClick={() => setProductoEditando(producto)}
+                            className="p-2 rounded-lg transition-all"
+                            style={{
+                              color: '#a03cea',
+                              background: 'rgba(160, 60, 234, 0.1)',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = 'rgba(160, 60, 234, 0.2)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'rgba(160, 60, 234, 0.1)';
+                            }}
+                            title="Editar precio"
+                          >
+                            <Edit size={18} />
+                          </button>
+                          <button
+                            onClick={() => setProductoHistorial(producto)}
+                            className="p-2 rounded-lg transition-all"
+                            style={{
+                              color: '#48bb78',
+                              background: 'rgba(72, 187, 120, 0.1)',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = 'rgba(72, 187, 120, 0.2)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'rgba(72, 187, 120, 0.1)';
+                            }}
+                            title="Ver historial"
+                          >
+                            <History size={18} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -375,6 +397,14 @@ export default function GestionPreciosPage() {
           totalProductos={productosFiltrados.length}
           onAplicar={handleAjusteMasivo}
           onCancel={() => setModalAjusteMasivoAbierto(false)}
+        />
+      )}
+
+      {/* Modal de historial de precios */}
+      {productoHistorial && (
+        <ModalHistorialPrecios
+          producto={productoHistorial}
+          onClose={() => setProductoHistorial(null)}
         />
       )}
     </DashboardLayout>
