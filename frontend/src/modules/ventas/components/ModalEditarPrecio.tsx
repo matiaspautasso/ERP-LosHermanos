@@ -14,24 +14,71 @@ interface ModalEditarPrecioProps {
 }
 
 export function ModalEditarPrecio({ producto, onSave, onCancel }: ModalEditarPrecioProps) {
-  const [precios, setPrecios] = useState({
+  // Permitir valores string o number para manejar campos vacíos temporalmente
+  const [precios, setPrecios] = useState<{
+    precio_minorista: number | string;
+    precio_mayorista: number | string;
+    precio_supermayorista: number | string;
+  }>({
     precio_minorista: producto.precio_minorista,
     precio_mayorista: producto.precio_mayorista,
     precio_supermayorista: producto.precio_supermayorista,
   });
 
   const handleGuardar = () => {
+    // Convertir a números y validar
+    const minorista = typeof precios.precio_minorista === 'string'
+      ? parseFloat(precios.precio_minorista)
+      : precios.precio_minorista;
+    const mayorista = typeof precios.precio_mayorista === 'string'
+      ? parseFloat(precios.precio_mayorista)
+      : precios.precio_mayorista;
+    const supermayorista = typeof precios.precio_supermayorista === 'string'
+      ? parseFloat(precios.precio_supermayorista)
+      : precios.precio_supermayorista;
+
     // Validar que todos los precios sean positivos
     if (
-      precios.precio_minorista <= 0 ||
-      precios.precio_mayorista <= 0 ||
-      precios.precio_supermayorista <= 0
+      isNaN(minorista) || minorista <= 0 ||
+      isNaN(mayorista) || mayorista <= 0 ||
+      isNaN(supermayorista) || supermayorista <= 0
     ) {
       alert('Todos los precios deben ser mayores a cero');
       return;
     }
 
-    onSave(producto.id, precios);
+    onSave(producto.id, {
+      precio_minorista: minorista,
+      precio_mayorista: mayorista,
+      precio_supermayorista: supermayorista,
+    });
+  };
+
+  // Manejar blur para validar y asignar valor por defecto si es necesario
+  const handleBlur = (campo: 'precio_minorista' | 'precio_mayorista' | 'precio_supermayorista') => {
+    const valor = precios[campo];
+    if (valor === '' || valor === null || valor === undefined) {
+      // Si está vacío, restaurar el precio original del producto
+      setPrecios({
+        ...precios,
+        [campo]: producto[campo],
+      });
+    } else if (typeof valor === 'string') {
+      // Convertir a número si es válido
+      const numero = parseFloat(valor);
+      if (!isNaN(numero)) {
+        setPrecios({
+          ...precios,
+          [campo]: numero,
+        });
+      } else {
+        // Si no es válido, restaurar el precio original
+        setPrecios({
+          ...precios,
+          [campo]: producto[campo],
+        });
+      }
+    }
   };
 
   return (
@@ -70,8 +117,9 @@ export function ModalEditarPrecio({ producto, onSave, onCancel }: ModalEditarPre
               min="0"
               value={precios.precio_minorista}
               onChange={(e) =>
-                setPrecios({ ...precios, precio_minorista: parseFloat(e.target.value) || 0 })
+                setPrecios({ ...precios, precio_minorista: e.target.value })
               }
+              onBlur={() => handleBlur('precio_minorista')}
               className="w-full px-4 py-2 rounded border-[2px]"
               style={{
                 borderColor: '#afa2c3',
@@ -91,8 +139,9 @@ export function ModalEditarPrecio({ producto, onSave, onCancel }: ModalEditarPre
               min="0"
               value={precios.precio_mayorista}
               onChange={(e) =>
-                setPrecios({ ...precios, precio_mayorista: parseFloat(e.target.value) || 0 })
+                setPrecios({ ...precios, precio_mayorista: e.target.value })
               }
+              onBlur={() => handleBlur('precio_mayorista')}
               className="w-full px-4 py-2 rounded border-[2px]"
               style={{
                 borderColor: '#afa2c3',
@@ -112,8 +161,9 @@ export function ModalEditarPrecio({ producto, onSave, onCancel }: ModalEditarPre
               min="0"
               value={precios.precio_supermayorista}
               onChange={(e) =>
-                setPrecios({ ...precios, precio_supermayorista: parseFloat(e.target.value) || 0 })
+                setPrecios({ ...precios, precio_supermayorista: e.target.value })
               }
+              onBlur={() => handleBlur('precio_supermayorista')}
               className="w-full px-4 py-2 rounded border-[2px]"
               style={{
                 borderColor: '#afa2c3',
