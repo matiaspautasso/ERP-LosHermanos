@@ -6,9 +6,37 @@ import { Producto } from '../api/types';
 interface BuscarProductoModalProps {
   onClose: () => void;
   onSelect: (producto: Producto) => void;
+  tipoVenta: 'Minorista' | 'Mayorista' | 'Supermayorista';
 }
 
-export function BuscarProductoModal({ onClose, onSelect }: BuscarProductoModalProps) {
+export function BuscarProductoModal({ onClose, onSelect, tipoVenta }: BuscarProductoModalProps) {
+  // Función para obtener el precio correcto según el tipo de venta
+  const obtenerPrecioSegunTipo = (producto: Producto): number => {
+    const tipoNormalizado = tipoVenta.toLowerCase();
+
+    let precio: number;
+
+    switch (tipoNormalizado) {
+      case 'supermayorista':
+        precio = Number(producto.precio_supermayorista);
+        break;
+      case 'mayorista':
+        precio = Number(producto.precio_mayorista);
+        break;
+      case 'minorista':
+      default:
+        precio = Number(producto.precio_minorista);
+    }
+
+    // Validar que el precio sea válido
+    if (Number.isNaN(precio) || precio < 0) {
+      console.error(`Precio inválido para producto ${producto.nombre}:`, precio);
+      return 0;
+    }
+
+    return precio;
+  };
+
   const [filtros, setFiltros] = useState({
     nombre: '',
     categoria: '',
@@ -174,7 +202,7 @@ export function BuscarProductoModal({ onClose, onSelect }: BuscarProductoModalPr
                         {producto.unidades.nombre}
                       </td>
                       <td className="py-3 px-4" style={{ color: '#f1eef7' }}>
-                        ${Number(producto.precio_lista).toFixed(2)}
+                        ${obtenerPrecioSegunTipo(producto).toFixed(2)}
                       </td>
                       <td
                         className="py-3 px-4"

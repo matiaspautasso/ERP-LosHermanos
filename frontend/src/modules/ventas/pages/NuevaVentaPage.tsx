@@ -10,7 +10,7 @@ import { Producto } from '../api/types';
 interface ProductoVenta {
   id: string;
   nombre: string;
-  precio_lista: number;
+  precio_unitario: number;
   cantidad: number | string;
   stock_disponible: number;
 }
@@ -36,6 +36,34 @@ export default function NuevaVentaPage() {
   };
 
   const { createVenta, creandoVenta } = useVentas(limpiarFormulario);
+
+  // Función para obtener el precio correcto según el tipo de venta
+  const obtenerPrecioSegunTipo = (producto: Producto): number => {
+    const tipoNormalizado = tipoVenta.toLowerCase();
+
+    let precio: number;
+
+    switch (tipoNormalizado) {
+      case 'supermayorista':
+        precio = Number(producto.precio_supermayorista || producto.precio_lista);
+        break;
+      case 'mayorista':
+        precio = Number(producto.precio_mayorista || producto.precio_lista);
+        break;
+      case 'minorista':
+      default:
+        precio = Number(producto.precio_minorista || producto.precio_lista);
+    }
+
+    // Validar que el precio sea válido
+    if (Number.isNaN(precio) || precio < 0) {
+      console.error(`Precio inválido para producto ${producto.nombre}:`, precio);
+      toast.error(`Error: Precio inválido para ${producto.nombre}`);
+      return 0;
+    }
+
+    return precio;
+  };
 
   const handleClienteChange = (selectedId: string) => {
     if (productos.length > 0) {
@@ -72,7 +100,7 @@ export default function NuevaVentaPage() {
 
   const calcularSubtotal = (producto: ProductoVenta) => {
     const cantidad = typeof producto.cantidad === 'number' ? producto.cantidad : parseFloat(producto.cantidad) || 0;
-    return producto.precio_lista * cantidad;
+    return producto.precio_unitario * cantidad;
   };
 
   const calcularTotales = () => {
@@ -118,12 +146,15 @@ export default function NuevaVentaPage() {
       return;
     }
 
+    // Calcular precio correcto según tipo de venta
+    const precioUnitario = obtenerPrecioSegunTipo(producto);
+
     setProductos([
       ...productos,
       {
         id: producto.id,
         nombre: producto.nombre,
-        precio_lista: Number(producto.precio_lista),
+        precio_unitario: precioUnitario,
         cantidad: 1,
         stock_disponible: Number(producto.stock_actual),
       },
@@ -167,23 +198,29 @@ export default function NuevaVentaPage() {
       return;
     }
 
-    // Validar que ningún producto tenga cantidad vacía
-    const productosConCantidadVacia = productos.filter(p => p.cantidad === '' || p.cantidad === 0);
-    if (productosConCantidadVacia.length > 0) {
-      toast.error('Todos los productos deben tener una cantidad válida');
+    // Validar que ningún producto tenga cantidad vacía o cero
+    const productosInvalidos = productos.filter(
+      p => p.cantidad === '' || p.cantidad === 0 || Number.isNaN(Number(p.cantidad))
+    );
+
+    if (productosInvalidos.length > 0) {
+      toast.error('Todos los productos deben tener una cantidad válida mayor a 0');
       return;
     }
+
+    // Normalizar tipo_venta a lowercase para backend
+    const tipoVentaBackend = tipoVenta.toLowerCase() as 'minorista' | 'mayorista' | 'supermayorista';
 
     // Crear la venta
     createVenta({
       cliente_id: clienteId,
-      tipo_venta: tipoVenta,
+      tipo_venta: tipoVentaBackend,
       forma_pago: formaPago,
       descuento_porcentaje: typeof descuentoPorcentaje === 'number' ? descuentoPorcentaje : 0,
       items: productos.map((p) => ({
         producto_id: p.id,
         cantidad: typeof p.cantidad === 'number' ? p.cantidad : parseFloat(p.cantidad),
-        precio_unitario: p.precio_lista,
+        precio_unitario: p.precio_unitario,
       })),
     });
   };
@@ -351,7 +388,7 @@ export default function NuevaVentaPage() {
                         {producto.nombre}
                       </td>
                       <td className="py-3 px-4" style={{ color: '#f1eef7' }}>
-                        ${Number(producto.precio_lista).toFixed(2)}
+                        ${Number(producto.precio_unitario).toFixed(2)}
                       </td>
                       <td className="py-3 px-4">
                         <input
@@ -563,6 +600,7 @@ export default function NuevaVentaPage() {
             onSelect={(producto) => {
               agregarProducto(producto);
             }}
+            tipoVenta={tipoVenta}
           />
         )}
 
