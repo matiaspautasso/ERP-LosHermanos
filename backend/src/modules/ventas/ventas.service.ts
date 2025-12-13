@@ -71,18 +71,49 @@ export class VentasService {
     const itemsConCalculos = items.map((item) => {
       const producto = productosMap.get(item.producto_id);
 
-      // Obtener precio según tipo de venta
-      let precioUnitario = Number(producto.precio_lista);
+      // Obtener precio según tipo de venta desde tabla precios
+      let precioUnitario: number;
 
-      // Si hay precios configurados (minorista/mayorista/supermayorista), usar esos
+      // Si hay precios configurados, usar el correspondiente según tipo_venta
       if (producto.precios && producto.precios.length > 0) {
-        const precio = producto.precios[0];
-        if (tipo_venta === 'Supermayorista') {
-          precioUnitario = Number(precio.precio_supermayorista || precio.precio_mayorista);
-        } else if (tipo_venta === 'Mayorista') {
-          precioUnitario = Number(precio.precio_mayorista);
-        } else {
-          precioUnitario = Number(precio.precio_minorista);
+        const precioConfig = producto.precios[0];
+
+        switch (tipo_venta) {
+          case 'Supermayorista':
+            precioUnitario = Number(precioConfig.precio_supermayorista);
+            if (!precioUnitario || precioUnitario <= 0) {
+              throw new BadRequestException(
+                `Precio supermayorista no configurado para "${producto.nombre}"`
+              );
+            }
+            break;
+
+          case 'Mayorista':
+            precioUnitario = Number(precioConfig.precio_mayorista);
+            if (!precioUnitario || precioUnitario <= 0) {
+              throw new BadRequestException(
+                `Precio mayorista no configurado para "${producto.nombre}"`
+              );
+            }
+            break;
+
+          case 'Minorista':
+          default:
+            precioUnitario = Number(precioConfig.precio_minorista);
+            if (!precioUnitario || precioUnitario <= 0) {
+              throw new BadRequestException(
+                `Precio minorista no configurado para "${producto.nombre}"`
+              );
+            }
+            break;
+        }
+      } else {
+        // Fallback: usar precio_lista (precio de costo)
+        precioUnitario = Number(producto.precio_lista);
+        if (!precioUnitario || precioUnitario <= 0) {
+          throw new BadRequestException(
+            `No hay precios configurados para "${producto.nombre}"`
+          );
         }
       }
 

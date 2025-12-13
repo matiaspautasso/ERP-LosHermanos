@@ -33,13 +33,37 @@ export class ProductosService {
             nombre: true,
           },
         },
+        precios: {
+          select: {
+            precio_minorista: true,
+            precio_mayorista: true,
+            precio_supermayorista: true,
+          },
+          orderBy: {
+            ultima_modificacion: 'desc',
+          },
+          take: 1,
+        },
       },
       orderBy: {
         nombre: 'asc',
       },
     });
 
-    return productos;
+    // Mapear para aplanar la estructura de precios
+    return productos.map((p) => ({
+      id: p.id,
+      nombre: p.nombre,
+      precio_lista: p.precio_lista,
+      stock_actual: p.stock_actual,
+      stock_minimo: p.stock_minimo,
+      descripcion: p.descripcion,
+      categorias: p.categorias,
+      unidades: p.unidades,
+      precio_minorista: p.precios[0]?.precio_minorista ?? p.precio_lista,
+      precio_mayorista: p.precios[0]?.precio_mayorista ?? p.precio_lista,
+      precio_supermayorista: p.precios[0]?.precio_supermayorista ?? p.precio_lista,
+    }));
   }
 
   /**
@@ -93,7 +117,25 @@ export class ProductosService {
         p.stock_minimo,
         p.descripcion,
         jsonb_build_object('id', c.id, 'nombre', c.nombre) as categorias,
-        jsonb_build_object('id', u.id, 'nombre', u.nombre) as unidades
+        jsonb_build_object('id', u.id, 'nombre', u.nombre) as unidades,
+        COALESCE(
+          (SELECT precio_minorista FROM precios
+           WHERE producto_id = p.id
+           ORDER BY ultima_modificacion DESC LIMIT 1),
+          p.precio_lista
+        ) as precio_minorista,
+        COALESCE(
+          (SELECT precio_mayorista FROM precios
+           WHERE producto_id = p.id
+           ORDER BY ultima_modificacion DESC LIMIT 1),
+          p.precio_lista
+        ) as precio_mayorista,
+        COALESCE(
+          (SELECT precio_supermayorista FROM precios
+           WHERE producto_id = p.id
+           ORDER BY ultima_modificacion DESC LIMIT 1),
+          p.precio_lista
+        ) as precio_supermayorista
       FROM productos p
       INNER JOIN categorias c ON p.categoria_id = c.id
       INNER JOIN unidades u ON p.unidad_id = u.id

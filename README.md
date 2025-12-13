@@ -1,79 +1,138 @@
-# ERP Los Hermanos - Sistema de Gestión Empresarial
+# ERP Los Hermanos
 
-> **Estado:** En Desarrollo | **Último Update:** Dic 2025 | **Progreso:** 65%
+> **Estado:** En Desarrollo | **Progreso:** 65% | **Última Actualización:** Dic 2025
 
-## 🎯 Descripción
+## Qué es
 
-Sistema ERP integral para empresas medianas con gestión de usuarios, clientes, gestión de stock, ventas y compras.
+Sistema ERP modular para gestión integral de empresas medianas con arquitectura escalable.
 
-**Stack Tecnológico:**
-- **Backend:** NestJS + TypeScript + Prisma + PostgreSQL (Supabase)
-- **Frontend:** React + TypeScript + Vite + TailwindCSS + shadcn/ui
-- **Base de Datos:** 17 tablas relacionadas, normalizada
-- **Autenticación:** express-session con cookies (no JWT)
+**Stack Principal:**
+- **Backend:** NestJS + Prisma + PostgreSQL (Supabase)
+- **Frontend:** React 18 + Vite + TailwindCSS + shadcn/ui
+- **Autenticación:** express-session (sin JWT)
 
-## 📊 Módulos del Sistema
+## Inicio Rápido
 
-### ✅ **Autenticación** (100%)
-Sistema completo de usuarios con registro, login, recuperación de contraseña y perfiles.
-- **Endpoints:** `/auth/register`, `/auth/login`, `/auth/logout`, `/auth/recover`, `/auth/profile`
-- **Frontend:** LoginPage, RegisterPage, RecoverPage, ProtectedRoute
-- **BD:** Tabla `usuarios`
-- **Autenticación:** express-session con cookies httpOnly
+### Prerrequisitos
 
-### ✅ **Gestión de Ventas** (100%)
-Sistema completo de ventas con búsqueda de productos, gestión de clientes y tipos de venta.
-- **Backend:** CRUD completo, búsqueda con unaccent, soporte Supermayorista
-- **Frontend:** NuevaVentaPage, ListaVentasPage, DetalleVentaPage
-- **BD:** `ventas`, `detalle_venta`
-- **Características:** Sin IVA, búsqueda sin acentos, formas de pago múltiples
+- Node.js 18+
+- npm o pnpm
+- PostgreSQL (local o Supabase)
 
-### 🔄 **Gestión de Productos** (70%)
-Catálogo de productos, categorías, precios y control de inventario.
-- **Backend:** CRUD completo, búsqueda avanzada, gestión de precios
-- **Frontend:** GestionPreciosPage (funcional, mejoras de UX pendientes)
-- **BD:** `productos`, `categorias`, `precios`, `unidades`
-- **Stack:** NestJS + React + Prisma
+### Instalación
 
-### 🔄 **Gestión de Clientes** (50%)
-CRUD de clientes, cuenta corriente y gestión de pagos.
-- **Backend:** CRUD completo implementado
-- **Frontend:** Pendiente de desarrollo
-- **BD:** `clientes`, `movimientos_cc`, `pagos_cliente`
-
-### 🔄 **Gestión de Compras** (10%)
-Proveedores, órdenes de compra y recepción de mercadería.
-- **Backend:** Estructura inicial creada
-- **Frontend:** Pendiente de desarrollo
-- **BD:** `proveedores`, `ordenes_compra`, `detalle_oc`
-
-### 🔄 **Reportes** (0% - Planificado)
-Dashboard ejecutivo con métricas y análisis de negocio.
-- **BD:** Views y stored procedures
-- **Stack:** NestJS + React + Charts.js
-
-## 🚀 Instalación y Configuración
-
-### 1. Backend
 ```bash
+# 1. Clonar repositorio
+git clone https://github.com/tu-usuario/ERP-LosHermanos.git
+cd ERP-LosHermanos
+
+# 2. Instalar dependencias
+npm run install:all
+
+# 3. Configurar variables de entorno
+# Crear backend/.env (ver sección Variables de Entorno)
+# Crear frontend/.env (ver sección Variables de Entorno)
+
+# 4. Sincronizar schema de base de datos
 cd backend
-npm install
-npm run start:dev  # http://localhost:3000
+npx prisma db pull
+npx prisma generate
+cd ..
+
+# 5. Levantar proyecto completo
+npm run dev
 ```
 
-### 2. Frontend
+### URLs de desarrollo
+
+- **Frontend:** http://localhost:5173
+- **Backend API:** http://localhost:3000/api
+- **Swagger Docs:** http://localhost:3000/api/docs
+- **Prisma Studio:** http://localhost:5555 (ejecutar `npm run prisma:studio` desde `backend/`)
+
+### Credenciales de prueba
+
+- **Email:** `vendedor@erp.com`
+- **Password:** `vendedor123`
+
+## Scripts principales
+
+### Desde la raíz del proyecto
+
 ```bash
-cd frontend
-npm install
-npm run dev        # http://localhost:5173
+npm run dev              # Levantar backend + frontend simultáneamente
+npm run install:all      # Instalar dependencias de backend y frontend
 ```
 
-### 3. Base de Datos
-- Configurar variables en `.env` (Supabase)
-- El script SQL está en `database/DB-script-Loshermanos.sql`
+### Backend (desde `backend/`)
 
-## 📚 Documentación
+```bash
+npm install              # Instalar dependencias
+npm run start:dev        # Servidor desarrollo (puerto 3000)
+npm run build            # Compilar para producción
+npm run start:prod       # Ejecutar build de producción
 
-- **[Autenticación](docs/modulos/01-autenticacion/README.md)** - Estado y configuración del módulo Auth
-- **[Roadmap](ROADMAP.md)** - Cronograma de desarrollo
-- **[Arquitectura](ARQUITECTURA.md)** - Documentación técnica
+# Prisma
+npm run prisma:generate  # Regenerar Prisma Client
+npm run prisma:studio    # GUI base de datos (puerto 5555)
+npm run prisma:seed      # Poblar base de datos con datos iniciales
+npx prisma db pull       # Sincronizar schema desde PostgreSQL
+```
+
+### Frontend (desde `frontend/`)
+
+```bash
+npm install              # Instalar dependencias
+npm run dev              # Servidor desarrollo (puerto 5173)
+npm run build            # Compilar para producción
+npm run preview          # Previsualizar build de producción
+```
+
+## Variables de entorno
+
+### Backend `.env`
+
+Crear archivo `backend/.env` con las siguientes variables:
+
+```env
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public"
+PORT=3000
+NODE_ENV=development
+FRONTEND_URL=http://localhost:5173
+SESSION_SECRET=tu-clave-secreta-aleatoria
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=tu-email@gmail.com
+EMAIL_PASSWORD=tu-password-de-aplicacion
+```
+
+### Frontend `.env`
+
+Crear archivo `frontend/.env` con:
+
+```env
+VITE_API_URL=http://localhost:3000/api
+```
+
+## Estado de módulos
+
+| Módulo | Estado | Backend | Frontend |
+|--------|--------|---------|----------|
+| Autenticación | ✅ 100% | Completo | Completo |
+| Ventas | ✅ 100% | Completo | Completo |
+| Productos | 🔄 70% | Completo | Funcional |
+| Clientes | 🔄 50% | Completo | Pendiente |
+| Compras | 🔄 10% | Inicial | Pendiente |
+| Proveedores | 🔄 10% | Inicial | Pendiente |
+| Reportes | ⏳ 0% | Planificado | Planificado |
+
+## Documentación
+
+- **[CLAUDE.md](CLAUDE.md)** - Guía para desarrollo con Claude Code
+- **[ARQUITECTURA.md](ARQUITECTURA.md)** - Detalles técnicos, patrones, convenciones
+- **[ROADMAP.md](ROADMAP.md)** - Cronograma y planificación
+- **[docs/modulos/](docs/modulos/)** - Documentación específica por módulo
+
+## Licencia
+
+Proyecto privado - Todos los derechos reservados

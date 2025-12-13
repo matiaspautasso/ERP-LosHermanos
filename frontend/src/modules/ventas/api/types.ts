@@ -14,6 +14,9 @@ export interface Producto {
   id: string;
   nombre: string;
   precio_lista: number;
+  precio_minorista: number;
+  precio_mayorista: number;
+  precio_supermayorista: number;
   stock_actual: number;
   stock_minimo: number;
   iva_porcentaje: number;
@@ -42,7 +45,7 @@ export interface VentaItem {
 
 export interface CreateVentaRequest {
   cliente_id: string;
-  tipo_venta: 'Minorista' | 'Mayorista' | 'Supermayorista';
+  tipo_venta: 'minorista' | 'mayorista' | 'supermayorista';
   forma_pago: 'Efectivo' | 'Tarjeta' | 'Transferencia';
   descuento_porcentaje: number;
   items: VentaItem[];

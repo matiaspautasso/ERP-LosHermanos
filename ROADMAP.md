@@ -1,77 +1,214 @@
-# 🗺️ ROADMAP - ERP LOS HERMANOS
+# ROADMAP - ERP Los Hermanos
 
-> **Estado:** Desarrollo Activo | **Última Actualización:** Dic 2025
+> **Estado:** Desarrollo Activo | **Progreso Global:** 65% | **Última Actualización:** Dic 2025
 
-## 🎯 Objetivos del Sistema
+## Objetivos del Proyecto
 
-Sistema ERP modular para gestión integral de operaciones empresariales con arquitectura escalable.
+Desarrollar un sistema ERP modular y escalable para gestión integral de empresas medianas, con enfoque en:
 
-**Principios:**
-- Módulos independientes pero integrados
-- Stack tecnológico unificado (NestJS + React + Prisma)
-- Interfaz intuitiva y responsive
-- Seguridad y control de accesos basados en sesiones
+- Operaciones de ventas y compras
+- Gestión de inventarios y precios
+- Seguimiento de clientes y proveedores
+- Reportes y análisis de negocio
+- Arquitectura extensible para futuros módulos
 
-## 📋 CRONOGRAMA DE DESARROLLO
+## FASE 1: Infraestructura Base ✅ 100%
 
-### ✅ **FASE 1: BASE (COMPLETADA)**
-**Módulo Autenticación:** Sistema completo de usuarios, login, registro, recuperación de contraseña.
-- Autenticación basada en sesiones con express-session
-- Cookies httpOnly con expiración de 24 horas
-- Recuperación de contraseña por email (nodemailer)
+**Objetivo:** Establecer fundamentos técnicos y autenticación
 
-### ✅ **FASE 2: OPERACIONES CORE (COMPLETADA)**
+### 1.1 Configuración Inicial ✅
+- Monorepo con NestJS + React + Prisma
+- Base de datos PostgreSQL (Supabase) con 17 tablas normalizadas
+- Configuración de desarrollo local
+- CI/CD básico
 
-#### **2.1 Gestión de Ventas** ✅
-**Estado:** Implementado y funcional
-**Funcionalidades:** Nueva venta, lista de ventas, detalle de venta, búsqueda de productos sin acentos
-**Stack:** NestJS + React + Prisma + unaccent (PostgreSQL)
-**BD:** `ventas`, `detalle_venta`
-**Características:** Tipos de venta (Minorista, Mayorista, Supermayorista), formas de pago múltiples, sin IVA
+### 1.2 Autenticación ✅
+- Sistema de login con sesiones (express-session)
+- Registro de usuarios
+- Recuperación de contraseña por email
+- Protección de rutas frontend y backend
+- Cambio de contraseña desde login
 
-#### **2.2 Gestión de Productos** 🔄 (70%)
-**Estado:** Backend completo, frontend funcional con mejoras pendientes
-**Funcionalidades:** CRUD productos, categorías, gestión de precios, ajuste masivo de precios
-**Stack:** NestJS + React + Prisma
-**BD:** `productos`, `categorias`, `precios`, `unidades`
-**Pendiente:** Optimización de UX en gestión de precios
+**Estado:** ✅ Completado
 
-### 🔄 **FASE 3: ENTIDADES DE NEGOCIO (EN DESARROLLO)**
+---
 
-#### **3.1 Gestión de Clientes** 🔄 (50%)
-**Estado:** Backend completo, frontend pendiente
-**Funcionalidades:** CRUD clientes, cuenta corriente, historial de pagos
-**Stack:** NestJS Controllers/Services + Prisma Models
-**BD:** `clientes`, `movimientos_cc`, `pagos_cliente`
-**Pendiente:** Interfaces de usuario (ListaClientesPage, NuevoClientePage, etc.)
+## FASE 2: Operaciones Core ✅ 90%
 
-#### **3.2 Gestión de Proveedores** 🔄 (10%)
-**Estado:** Estructura inicial creada
-**Funcionalidades:** CRUD proveedores, historial compras
-**Stack:** NestJS + React + Prisma
-**BD:** `proveedores`
+**Objetivo:** Implementar funcionalidades principales de ventas y productos
 
-#### **3.3 Gestión de Compras** 🔄 (10%)
-**Estado:** Estructura inicial creada
-**Funcionalidades:** Órdenes de compra, recepción, seguimiento
-**Stack:** NestJS + React + Prisma
-**BD:** `ordenes_compra`, `detalle_oc`
+### 2.1 Gestión de Ventas ✅ 100%
+- CRUD completo de ventas
+- Búsqueda de productos sin acentos
+- Tipos de venta (Minorista, Mayorista, Supermayorista)
+- Formas de pago (Efectivo, Tarjeta, Transferencia)
+- Exportación a PDF y Excel
+- Detalle de venta con historial
 
-### 🔄 **FASE 4: ANÁLISIS (FUTURA)**
+**Estado:** ✅ Completado
 
-#### **4.1 Reportes y Dashboard**
-**Funcionalidades:** Métricas, gráficos, reportes ejecutivos
-**Stack:** NestJS + React + Charts.js + PDF reports
-**BD:** Views, stored procedures
+### 2.2 Gestión de Productos 🔄 70%
+- CRUD de productos con categorías y unidades
+- Sistema de precios por tipo de venta
+- Gestión de precios individuales y masivos
+- Historial de cambios de precios con índices optimizados
+- Validación de jerarquía de precios
+- Exportación de lista de precios a Excel
 
-## 🏗️ ESTRUCTURA TECNOLÓGICA
+**Pendiente:**
+- Optimizaciones UX en gestión de precios
+- Gestión de stock en tiempo real
+- Alertas de stock mínimo
 
-### **Stack Unificado para Todos los Módulos:**
-- **Backend:** NestJS + TypeScript + Prisma ORM
-- **Frontend:** React 18 + TypeScript + Vite + TailwindCSS
-- **Database:** PostgreSQL (Supabase)
-- **Autenticación:** express-session + cookies httpOnly (no JWT)
-- **Testing:** Jest + Testing Library (configurado, sin tests implementados)
-- **UI:** shadcn/ui + Radix components
-- **State Management:** Zustand (frontend), EventEmitter (backend)
-- **HTTP:** Axios + React Query
+**Estado:** 🔄 En desarrollo
+
+---
+
+## FASE 3: Entidades de Negocio 🔄 30%
+
+**Objetivo:** Completar gestión de clientes, proveedores y compras
+
+### 3.1 Gestión de Clientes 🔄 50%
+
+**Completado:**
+- Backend CRUD completo
+- API para cuenta corriente
+- Búsqueda y filtrado
+
+**Pendiente:**
+- Frontend: ListaClientesPage
+- Frontend: NuevoClientePage
+- Frontend: EditarClientePage
+- Frontend: DetalleClientePage con cuenta corriente
+- Integración con ventas
+
+**Estado:** 🔄 Backend completado, frontend pendiente
+
+### 3.2 Gestión de Proveedores 🔄 10%
+
+**Completado:**
+- Estructura inicial de módulo
+
+**Pendiente:**
+- Backend CRUD completo
+- Frontend completo
+- Integración con compras
+
+**Estado:** 🔄 Estructura inicial
+
+### 3.3 Gestión de Compras 🔄 10%
+
+**Completado:**
+- Estructura inicial de módulo
+- Modelos de BD (ordenes_compra, detalle_oc, recepciones)
+
+**Pendiente:**
+- Backend: Órdenes de compra
+- Backend: Recepción de mercadería
+- Backend: Seguimiento de estado
+- Frontend completo
+- Integración con stock
+
+**Estado:** 🔄 Estructura inicial
+
+---
+
+## FASE 4: Análisis y Reportes ⏳ 0%
+
+**Objetivo:** Implementar dashboard y reportes ejecutivos
+
+### 4.1 Dashboard ⏳
+
+**Planificado:**
+- Métricas principales (ventas, compras, stock)
+- Gráficos de tendencias
+- Alertas y notificaciones
+- KPIs configurables
+
+**Estado:** ⏳ Planificado
+
+### 4.2 Reportes ⏳
+
+**Planificado:**
+- Reporte de ventas por período
+- Reporte de productos más vendidos
+- Análisis de clientes
+- Análisis de proveedores
+- Exportación a PDF y Excel
+- Programación de reportes automáticos
+
+**Estado:** ⏳ Planificado
+
+---
+
+## FASE 5: Optimizaciones y Extensiones ⏳ 0%
+
+**Objetivo:** Mejorar performance y agregar funcionalidades avanzadas
+
+### 5.1 Performance ⏳
+
+**Planificado:**
+- Optimización de consultas BD
+- Caché de datos frecuentes
+- Paginación mejorada
+- Lazy loading optimizado
+
+### 5.2 Funcionalidades Avanzadas ⏳
+
+**Planificado:**
+- Módulo de usuarios y permisos granulares
+- Auditoría completa de operaciones
+- Backup automático
+- Notificaciones en tiempo real
+- Integración con APIs externas (AFIP, etc.)
+
+**Estado:** ⏳ Planificado
+
+---
+
+## Resumen de Progreso por Módulo
+
+| Módulo | Fase | Progreso | Backend | Frontend |
+|--------|------|----------|---------|----------|
+| Autenticación | 1 | ✅ 100% | Completo | Completo |
+| Ventas | 2 | ✅ 100% | Completo | Completo |
+| Productos | 2 | 🔄 70% | Completo | Funcional |
+| Clientes | 3 | 🔄 50% | Completo | Pendiente |
+| Proveedores | 3 | 🔄 10% | Inicial | Pendiente |
+| Compras | 3 | 🔄 10% | Inicial | Pendiente |
+| Reportes | 4 | ⏳ 0% | Planificado | Planificado |
+| Dashboard | 4 | ⏳ 0% | Planificado | Planificado |
+
+---
+
+## Próximos Pasos (Prioridad)
+
+1. **Completar Módulo Clientes (Frontend)** - Fase 3.1
+   - Crear todas las páginas de gestión de clientes
+   - Integrar con sistema de ventas
+
+2. **Optimizar Gestión de Precios** - Fase 2.2
+   - Mejorar UX de edición masiva
+   - Agregar validaciones adicionales
+
+3. **Implementar Módulo Proveedores** - Fase 3.2
+   - Backend CRUD completo
+   - Frontend completo
+
+4. **Implementar Módulo Compras** - Fase 3.3
+   - Órdenes de compra
+   - Recepción de mercadería
+   - Integración con stock
+
+5. **Dashboard y Reportes** - Fase 4
+   - Métricas básicas
+   - Reportes de ventas
+
+---
+
+## Notas
+
+- Las fases no son estrictamente secuenciales; algunos módulos de Fase 3 pueden desarrollarse en paralelo
+- Los porcentajes son estimaciones basadas en funcionalidad implementada vs planificada
+- Para detalles técnicos de implementación, ver [ARQUITECTURA.md](ARQUITECTURA.md)
+- Para comandos y desarrollo, ver [CLAUDE.md](CLAUDE.md) y [README.md](README.md)
