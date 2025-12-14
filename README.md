@@ -55,13 +55,77 @@ npm run dev
 - **Email:** `vendedor@erp.com`
 - **Password:** `vendedor123`
 
+## Ejecución del proyecto
+
+### Caso 1: Desarrollo normal (sin actualizar dependencias)
+
+**Cuándo usar:** Desarrollo diario, cuando ya tienes las dependencias instaladas.
+
+```bash
+npm run dev
+```
+
+**¿Qué hace?**
+- ✅ Levanta backend en modo desarrollo (NestJS - puerto 3000)
+- ✅ Levanta frontend en modo desarrollo (React - puerto 5173)
+- ⚡ **Tiempo:** 2-5 segundos
+
+**Casos de uso:**
+- Inicio de día de trabajo
+- Después de hacer cambios en el código
+- Cuando reinicies los servidores
+- El 95% del tiempo usarás este comando
+
+---
+
+### Caso 2: Con actualización de dependencias
+
+**Cuándo usar:** Cuando agregaste/actualizaste paquetes o hiciste `git pull` con cambios en `package.json`.
+
+#### Opción A: Instalar + Levantar
+```bash
+npm run dev:fresh
+```
+
+**¿Qué hace?**
+1. 📦 Instala dependencias en backend y frontend
+2. ✅ Levanta ambos servidores
+- ⏱️ **Tiempo:** 30-90 segundos
+
+#### Opción B: Instalar por separado
+```bash
+npm run install:all    # Solo instalar dependencias
+npm run dev            # Luego levantar servidores
+```
+
+**Ejemplos prácticos:**
+```bash
+# Agregaste un nuevo paquete
+cd frontend
+npm install axios
+cd ..
+npm run dev  # Ya está instalado, solo levanta
+
+# Hiciste git pull con cambios en package.json
+git pull
+npm run dev:fresh  # Instala nuevas dependencias + levanta
+
+# Primera vez que clonas el proyecto
+git clone <repo>
+cd ERP-LosHermanos
+npm run dev:fresh  # Instala todo + levanta
+```
+
+---
+
 ## Scripts principales
 
 ### Desde la raíz del proyecto
 
 ```bash
-npm run dev              # Levantar backend + frontend simultáneamente
-npm run install:all      # Instalar dependencias de backend y frontend
+npm run dev              # Levantar backend + frontend (rápido)
+npm run dev:fresh        # Instalar dependencias + levantar servidores
+npm run install:all      # Solo instalar dependencias de backend y frontend
 ```
 
 ### Backend (desde `backend/`)
