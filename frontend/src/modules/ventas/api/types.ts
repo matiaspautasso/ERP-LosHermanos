@@ -13,7 +13,6 @@ export interface Cliente {
 export interface Producto {
   id: string;
   nombre: string;
-  precio_lista: number;
   precio_minorista: number;
   precio_mayorista: number;
   precio_supermayorista: number;
@@ -113,7 +112,6 @@ export interface VentaFilters {
 export interface ProductoConPrecios {
   id: string;
   nombre: string;
-  precio_lista: number;
   categoria: string;
   categoria_id: string;
   precio_minorista: number;

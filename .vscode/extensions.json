@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "supabase.supabase",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "prisma.prisma",
+    "mtxr.sqltools",
+    "mtxr.sqltools-driver-pg",
+    "cweijan.vscode-postgresql-client2"
+  ]
+}

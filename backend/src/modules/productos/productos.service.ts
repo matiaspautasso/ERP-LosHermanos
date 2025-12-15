@@ -17,7 +17,6 @@ export class ProductosService {
       select: {
         id: true,
         nombre: true,
-        precio_lista: true,
         stock_actual: true,
         stock_minimo: true,
         descripcion: true,
@@ -51,19 +50,30 @@ export class ProductosService {
     });
 
     // Mapear para aplanar la estructura de precios
-    return productos.map((p) => ({
-      id: p.id,
-      nombre: p.nombre,
-      precio_lista: p.precio_lista,
-      stock_actual: p.stock_actual,
-      stock_minimo: p.stock_minimo,
-      descripcion: p.descripcion,
-      categorias: p.categorias,
-      unidades: p.unidades,
-      precio_minorista: p.precios[0]?.precio_minorista ?? p.precio_lista,
-      precio_mayorista: p.precios[0]?.precio_mayorista ?? p.precio_lista,
-      precio_supermayorista: p.precios[0]?.precio_supermayorista ?? p.precio_lista,
-    }));
+    return productos.map((p) => {
+      // Validación: todos los productos deben tener precios configurados
+      if (!p.precios || p.precios.length === 0) {
+        throw new BadRequestException(
+          `El producto "${p.nombre}" (ID: ${p.id}) no tiene precios configurados. ` +
+          `Por favor, configure los precios antes de continuar.`
+        );
+      }
+
+      const precioActual = p.precios[0];
+
+      return {
+        id: p.id,
+        nombre: p.nombre,
+        stock_actual: p.stock_actual,
+        stock_minimo: p.stock_minimo,
+        descripcion: p.descripcion,
+        categorias: p.categorias,
+        unidades: p.unidades,
+        precio_minorista: precioActual.precio_minorista,
+        precio_mayorista: precioActual.precio_mayorista,
+        precio_supermayorista: precioActual.precio_supermayorista,
+      };
+    });
   }
 
   /**
@@ -75,7 +85,6 @@ export class ProductosService {
       select: {
         id: true,
         nombre: true,
-        precio_lista: true,
         costo: true,
         stock_actual: true,
         stock_minimo: true,
@@ -112,30 +121,20 @@ export class ProductosService {
       SELECT
         p.id,
         p.nombre,
-        p.precio_lista,
         p.stock_actual,
         p.stock_minimo,
         p.descripcion,
         jsonb_build_object('id', c.id, 'nombre', c.nombre) as categorias,
         jsonb_build_object('id', u.id, 'nombre', u.nombre) as unidades,
-        COALESCE(
-          (SELECT precio_minorista FROM precios
-           WHERE producto_id = p.id
-           ORDER BY ultima_modificacion DESC LIMIT 1),
-          p.precio_lista
-        ) as precio_minorista,
-        COALESCE(
-          (SELECT precio_mayorista FROM precios
-           WHERE producto_id = p.id
-           ORDER BY ultima_modificacion DESC LIMIT 1),
-          p.precio_lista
-        ) as precio_mayorista,
-        COALESCE(
-          (SELECT precio_supermayorista FROM precios
-           WHERE producto_id = p.id
-           ORDER BY ultima_modificacion DESC LIMIT 1),
-          p.precio_lista
-        ) as precio_supermayorista
+        (SELECT precio_minorista FROM precios
+         WHERE producto_id = p.id
+         ORDER BY ultima_modificacion DESC LIMIT 1) as precio_minorista,
+        (SELECT precio_mayorista FROM precios
+         WHERE producto_id = p.id
+         ORDER BY ultima_modificacion DESC LIMIT 1) as precio_mayorista,
+        (SELECT precio_supermayorista FROM precios
+         WHERE producto_id = p.id
+         ORDER BY ultima_modificacion DESC LIMIT 1) as precio_supermayorista
       FROM productos p
       INNER JOIN categorias c ON p.categoria_id = c.id
       INNER JOIN unidades u ON p.unidad_id = u.id
@@ -212,7 +211,6 @@ export class ProductosService {
       select: {
         id: true,
         nombre: true,
-        precio_lista: true,
         categorias: {
           select: {
             id: true,
@@ -238,18 +236,29 @@ export class ProductosService {
       },
     });
 
-    return productos.map((producto) => ({
-      id: producto.id,
-      nombre: producto.nombre,
-      precio_lista: producto.precio_lista,
-      categoria: producto.categorias.nombre,
-      categoria_id: producto.categorias.id,
-      precio_minorista: producto.precios[0]?.precio_minorista || producto.precio_lista,
-      precio_mayorista: producto.precios[0]?.precio_mayorista || producto.precio_lista,
-      precio_supermayorista: producto.precios[0]?.precio_supermayorista || producto.precio_lista,
-      ultima_modificacion: producto.precios[0]?.ultima_modificacion,
-      tiene_precios_configurados: producto.precios.length > 0,
-    }));
+    return productos.map((producto) => {
+      // Validación: todos los productos deben tener precios configurados
+      if (!producto.precios || producto.precios.length === 0) {
+        throw new BadRequestException(
+          `El producto "${producto.nombre}" (ID: ${producto.id}) no tiene precios configurados. ` +
+          `Por favor, configure los precios antes de continuar.`
+        );
+      }
+
+      const precioActual = producto.precios[0];
+
+      return {
+        id: producto.id,
+        nombre: producto.nombre,
+        categoria: producto.categorias.nombre,
+        categoria_id: producto.categorias.id,
+        precio_minorista: precioActual.precio_minorista,
+        precio_mayorista: precioActual.precio_mayorista,
+        precio_supermayorista: precioActual.precio_supermayorista,
+        ultima_modificacion: precioActual.ultima_modificacion,
+        tiene_precios_configurados: true,
+      };
+    });
   }
 
   /**
@@ -318,21 +327,18 @@ export class ProductosService {
       productos.map((producto) => {
         const precioActual = producto.precios[0];
 
-        // Calcular precios base (actuales o precio_lista)
-        let baseMinorista: number;
-        let baseMayorista: number;
-        let baseSupermayorista: number;
-
-        if (precioActual) {
-          baseMinorista = Number(precioActual.precio_minorista);
-          baseMayorista = Number(precioActual.precio_mayorista);
-          baseSupermayorista = Number(precioActual.precio_supermayorista);
-        } else {
-          // Si no tiene precios configurados, usar precio_lista como base
-          baseMinorista = Number(producto.precio_lista);
-          baseMayorista = Number(producto.precio_lista);
-          baseSupermayorista = Number(producto.precio_lista);
+        // Validación: el producto debe tener precios configurados
+        if (!precioActual) {
+          throw new BadRequestException(
+            `El producto "${producto.nombre}" (ID: ${producto.id}) no tiene precios configurados. ` +
+            `Por favor, configure los precios antes de realizar ajustes masivos.`
+          );
         }
+
+        // Calcular precios base actuales
+        const baseMinorista = Number(precioActual.precio_minorista);
+        const baseMayorista = Number(precioActual.precio_mayorista);
+        const baseSupermayorista = Number(precioActual.precio_supermayorista);
 
         // Aplicar ajuste según el tipo solicitado
         let nuevoMinorista = baseMinorista;

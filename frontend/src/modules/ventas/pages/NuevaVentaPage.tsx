@@ -45,20 +45,20 @@ export default function NuevaVentaPage() {
 
     switch (tipoNormalizado) {
       case 'supermayorista':
-        precio = Number(producto.precio_supermayorista || producto.precio_lista);
+        precio = Number(producto.precio_supermayorista);
         break;
       case 'mayorista':
-        precio = Number(producto.precio_mayorista || producto.precio_lista);
+        precio = Number(producto.precio_mayorista);
         break;
       case 'minorista':
       default:
-        precio = Number(producto.precio_minorista || producto.precio_lista);
+        precio = Number(producto.precio_minorista);
     }
 
-    // Validar que el precio sea válido
-    if (Number.isNaN(precio) || precio < 0) {
-      console.error(`Precio inválido para producto ${producto.nombre}:`, precio);
-      toast.error(`Error: Precio inválido para ${producto.nombre}`);
+    // Validar que el precio sea válido y esté configurado
+    if (Number.isNaN(precio) || precio <= 0) {
+      console.error(`Precio no configurado para producto ${producto.nombre}:`, precio);
+      toast.error(`El producto "${producto.nombre}" no tiene precios configurados. Por favor, configure los precios antes de vender.`);
       return 0;
     }
 

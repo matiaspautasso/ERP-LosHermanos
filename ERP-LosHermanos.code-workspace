@@ -1,0 +1,29 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "supabase.projectRef": "rfhizunlwvoemvlscbqg",
+    "supabase.projectUrl": "https://rfhizunlwvoemvlscbqg.supabase.co",
+    "supabase.anonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmaGl6dW5sd3ZvZW12bHNjYnFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1NDE2NTIsImV4cCI6MjA3ODExNzY1Mn0.IXP3Rs4rL5zYDFk7rs-ZKSWlGQU2kMd_fNb2cukWzbQ",
+    "files.watcherExclude": {
+      "**/node_modules/**": true,
+      "**/.git/objects/**": true,
+      "**/.git/subtree-cache/**": true,
+      "**/dist/**": true,
+      "**/coverage/**": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "supabase.supabase",
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+      "prisma.prisma",
+      "mtxr.sqltools",
+      "mtxr.sqltools-driver-pg"
+    ]
+  }
+}

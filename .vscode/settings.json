@@ -1,3 +1,50 @@
 {
-    "github.copilot.chat.agent.autoFix": true
+    "github.copilot.chat.agent.autoFix": true,
+    "github.copilot.chat.codeGeneration.instructions": [
+        {
+            "file": ".github/copilot-instructions.md"
+        }
+    ],
+    "github.copilot.chat.mcp": {
+        "servers": {
+            "postgres-erp": {
+                "command": "npx",
+                "args": [
+                    "-y",
+                    "@modelcontextprotocol/server-postgres",
+                    "postgresql://postgres.rfhizunlwvoemvlscbqg:Fpxybq7IxyXjKHJU@aws-1-sa-east-1.pooler.supabase.com:5432/postgres"
+                ]
+            }
+        }
+    },
+    "sqltools.connections": [
+        {
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "aws-1-sa-east-1.pooler.supabase.com",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "ERP Los Hermanos",
+            "database": "postgres",
+            "username": "postgres.rfhizunlwvoemvlscbqg",
+            "password": "Fpxybq7IxyXjKHJU",
+            "connectionTimeout": 30
+        }
+    ],
+    "supabase.projectRef": "rfhizunlwvoemvlscbqg",
+    "supabase.projectUrl": "https://rfhizunlwvoemvlscbqg.supabase.co",
+    "supabase.anonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmaGl6dW5sd3ZvZW12bHNjYnFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1NDE2NTIsImV4cCI6MjA3ODExNzY1Mn0.IXP3Rs4rL5zYDFk7rs-ZKSWlGQU2kMd_fNb2cukWzbQ",
+    "supabase.database": {
+        "host": "aws-1-sa-east-1.pooler.supabase.com",
+        "port": 5432,
+        "database": "postgres",
+        "user": "postgres.rfhizunlwvoemvlscbqg",
+        "password": "Fpxybq7IxyXjKHJU"
+    },
+    "files.watcherExclude": {
+        "**/node_modules/**": true,
+        "**/.git/**": true,
+        "**/dist/**": true,
+        "**/coverage/**": true
+    }
 }
