@@ -18,7 +18,8 @@
       "Bash(findstr:*)",
       "Bash(netstat:*)",
       "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\":*)",
-      "Bash(\"C:/Program Files/PostgreSQL/18/bin/psql.exe\":*)"
+      "Bash(\"C:/Program Files/PostgreSQL/18/bin/psql.exe\":*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
