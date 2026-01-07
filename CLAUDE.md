@@ -6,11 +6,13 @@
 
 ERP Los Hermanos - Sistema modular de gestión empresarial con NestJS + React + Prisma + PostgreSQL (Supabase).
 
-## Rama actual
+## Ramas principales
 
-**Rama:** `ventas/cambios` (actualizada enero 2026)
+**Ramas activas:**
+- `main` - Código en producción (estable)
+- `desarrollo` - Rama de integración principal ⭐ (usar para desarrollo)
 
-**Foco actual:**
+**Estado actual (enero 2026):**
 - Módulo Ventas ✅ 100% completado
 - Gestión de Precios ✅ 100% completado
 - Optimización de Base de Datos (scripts en `database/scripts/`)
