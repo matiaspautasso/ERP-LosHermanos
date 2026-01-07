@@ -219,10 +219,10 @@ export class VentasService {
   }
 
   /**
-   * Obtener todas las ventas con filtros
+   * Obtener todas las ventas con filtros y paginación
    */
   async findAll(filters: VentaFilterDto) {
-    const { desde, hasta, cliente_id, tipo_venta } = filters;
+    const { desde, hasta, cliente_id, tipo_venta, page = 1, limit = 50 } = filters;
 
     const where: any = {};
 
@@ -244,30 +244,47 @@ export class VentasService {
       where.tipo_venta = tipo_venta;
     }
 
-    const ventas = await this.prisma.ventas.findMany({
-      where,
-      include: {
-        clientes: {
-          select: {
-            nombre: true,
-            apellido: true,
+    // Calcular skip para paginación
+    const skip = (page - 1) * limit;
+
+    // Consultar ventas y total en paralelo
+    const [ventas, total] = await Promise.all([
+      this.prisma.ventas.findMany({
+        where,
+        include: {
+          clientes: {
+            select: {
+              nombre: true,
+              apellido: true,
+            },
           },
         },
-      },
-      orderBy: {
-        fecha: 'desc',
-      },
-    });
+        orderBy: {
+          fecha: 'desc',
+        },
+        skip,
+        take: limit,
+      }),
+      this.prisma.ventas.count({ where }),
+    ]);
 
-    return ventas.map((venta) => ({
-      id: venta.id.toString(),
-      fecha: venta.fecha,
-      cliente: `${venta.clientes.nombre} ${venta.clientes.apellido}`,
-      tipo_venta: venta.tipo_venta,
-      forma_pago: venta.forma_pago,
-      total: Number(venta.total),
-      descuento: Number(venta.descuento),
-    }));
+    return {
+      data: ventas.map((venta) => ({
+        id: venta.id.toString(),
+        fecha: venta.fecha,
+        cliente: `${venta.clientes.nombre} ${venta.clientes.apellido}`,
+        tipo_venta: venta.tipo_venta,
+        forma_pago: venta.forma_pago,
+        total: Number(venta.total),
+        descuento: Number(venta.descuento),
+      })),
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   /**

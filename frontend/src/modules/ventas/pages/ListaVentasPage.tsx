@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Eye, FileDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Eye, FileDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { useVentasList } from '../hooks/useVentas';
+import type { VentaListItem } from '../api/types';
 import * as XLSX from 'xlsx';
 
 export default function ListaVentasPage() {
@@ -12,9 +13,13 @@ export default function ListaVentasPage() {
     hasta: '',
     tipo_venta: '',
   });
+  const [page, setPage] = useState(1);
   const [ordenFecha, setOrdenFecha] = useState<'asc' | 'desc'>('desc');
 
-  const { data: ventas = [], isLoading } = useVentasList(filtros);
+  const { data, isLoading } = useVentasList({ ...filtros, page, limit: 50 });
+
+  const ventas: VentaListItem[] = (data?.data as VentaListItem[]) || [];
+  const pagination = data?.pagination;
 
   const getTipoBadgeColor = (tipo: string) => {
     switch (tipo.toLowerCase()) {
@@ -48,7 +53,7 @@ export default function ListaVentasPage() {
   const exportarAExcel = () => {
     if (!ventas || ventas.length === 0) return;
 
-    const datosExcel = ventas.map((venta) => ({
+    const datosExcel = ventas.map((venta: VentaListItem) => ({
       'N° Venta': `#${venta.id}`,
       'Fecha': new Date(venta.fecha).toLocaleDateString(),
       'Cliente': venta.cliente,
@@ -326,6 +331,84 @@ export default function ListaVentasPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {/* Paginación */}
+          {pagination && pagination.totalPages > 1 && (
+            <div className="mt-6 flex items-center justify-between border-t-[3px] pt-4" style={{ borderColor: '#000' }}>
+              <div className="text-sm" style={{ color: '#f1eef7' }}>
+                Mostrando {((page - 1) * 50) + 1} a {Math.min(page * 50, pagination.total)} de {pagination.total} ventas
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="px-4 py-2 rounded-lg transition-all flex items-center gap-2"
+                  style={{
+                    background: page === 1 
+                      ? 'rgba(175, 162, 195, 0.3)' 
+                      : 'rgba(175, 162, 195, 0.5)',
+                    color: page === 1 ? '#6b6b6b' : '#f1eef7',
+                    cursor: page === 1 ? 'not-allowed' : 'pointer',
+                    border: '2px solid',
+                    borderColor: page === 1 ? 'rgba(107, 107, 107, 0.5)' : '#afa2c3',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (page > 1) {
+                      e.currentTarget.style.background = 'rgba(175, 162, 195, 0.7)';
+                      e.currentTarget.style.borderColor = '#a03cea';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (page > 1) {
+                      e.currentTarget.style.background = 'rgba(175, 162, 195, 0.5)';
+                      e.currentTarget.style.borderColor = '#afa2c3';
+                    }
+                  }}
+                >
+                  <ChevronLeft size={18} />
+                  Anterior
+                </button>
+                
+                <div className="px-4 py-2 rounded-lg" style={{ 
+                  background: 'rgba(160, 60, 234, 0.2)', 
+                  color: '#fefbe4',
+                  border: '2px solid #a03cea',
+                }}>
+                  Página {page} de {pagination.totalPages}
+                </div>
+                
+                <button
+                  onClick={() => setPage(p => p + 1)}
+                  disabled={page >= pagination.totalPages}
+                  className="px-4 py-2 rounded-lg transition-all flex items-center gap-2"
+                  style={{
+                    background: page >= pagination.totalPages 
+                      ? 'rgba(175, 162, 195, 0.3)' 
+                      : 'rgba(175, 162, 195, 0.5)',
+                    color: page >= pagination.totalPages ? '#6b6b6b' : '#f1eef7',
+                    cursor: page >= pagination.totalPages ? 'not-allowed' : 'pointer',
+                    border: '2px solid',
+                    borderColor: page >= pagination.totalPages ? 'rgba(107, 107, 107, 0.5)' : '#afa2c3',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (page < pagination.totalPages) {
+                      e.currentTarget.style.background = 'rgba(175, 162, 195, 0.7)';
+                      e.currentTarget.style.borderColor = '#a03cea';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (page < pagination.totalPages) {
+                      e.currentTarget.style.background = 'rgba(175, 162, 195, 0.5)';
+                      e.currentTarget.style.borderColor = '#afa2c3';
+                    }
+                  }}
+                >
+                  Siguiente
+                  <ChevronRight size={18} />
+                </button>
+              </div>
             </div>
           )}
         </div>

@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { ventasService } from '../api/ventasService';
 import { clientesService } from '../api/clientesService';
 import { productosService } from '../api/productosService';
-import { CreateVentaRequest, VentaFilters } from '../api/types';
+import { CreateVentaRequest, VentaFilters, VentasListResponse } from '../api/types';
 
 export function useVentas(onSuccess?: () => void) {
   const queryClient = useQueryClient();
@@ -31,9 +31,11 @@ export function useVentas(onSuccess?: () => void) {
 }
 
 export function useVentasList(filters?: VentaFilters) {
-  return useQuery({
+  return useQuery<VentasListResponse>({
     queryKey: ['ventas', filters],
     queryFn: () => ventasService.getAll(filters),
+    // Mantiene datos anteriores mientras carga nueva página (React Query v5)
+    placeholderData: (prev) => prev,
   });
 }
 

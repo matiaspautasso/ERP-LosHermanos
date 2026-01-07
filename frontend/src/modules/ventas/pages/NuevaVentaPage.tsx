@@ -208,13 +208,10 @@ export default function NuevaVentaPage() {
       return;
     }
 
-    // Normalizar tipo_venta a lowercase para backend
-    const tipoVentaBackend = tipoVenta.toLowerCase() as 'minorista' | 'mayorista' | 'supermayorista';
-
     // Crear la venta
     createVenta({
       cliente_id: clienteId,
-      tipo_venta: tipoVentaBackend,
+      tipo_venta: tipoVenta,
       forma_pago: formaPago,
       descuento_porcentaje: typeof descuentoPorcentaje === 'number' ? descuentoPorcentaje : 0,
       items: productos.map((p) => ({
@@ -568,13 +565,13 @@ export default function NuevaVentaPage() {
 
             <button
               onClick={handleConfirmarVenta}
-              disabled={creandoVenta}
-              className="w-full px-6 py-3 rounded-lg flex items-center justify-center gap-2 transition-all text-white disabled:opacity-50"
+              disabled={creandoVenta || productos.length === 0 || !clienteId}
+              className="w-full px-6 py-3 rounded-lg flex items-center justify-center gap-2 transition-all text-white disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 background: 'linear-gradient(135deg, #FB6564 0%, #A03CEA 100%)',
               }}
               onMouseEnter={(e) => {
-                if (!creandoVenta) {
+                if (!creandoVenta && productos.length > 0 && clienteId) {
                   e.currentTarget.style.background = 'linear-gradient(135deg, #fa4a49 0%, #8f2bd1 100%)';
                   e.currentTarget.style.transform = 'scale(1.02)';
                 }

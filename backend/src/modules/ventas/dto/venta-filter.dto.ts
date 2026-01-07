@@ -1,4 +1,5 @@
-import { IsOptional, IsString, IsDateString } from 'class-validator';
+import { IsOptional, IsString, IsDateString, IsNumber, Min } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class VentaFilterDto {
@@ -37,4 +38,28 @@ export class VentaFilterDto {
   @IsOptional()
   @IsString()
   tipo_venta?: string;
+
+  @ApiProperty({
+    description: 'Número de página',
+    example: 1,
+    required: false,
+    default: 1,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1, { message: 'La página debe ser mayor o igual a 1' })
+  page?: number;
+
+  @ApiProperty({
+    description: 'Cantidad de registros por página',
+    example: 50,
+    required: false,
+    default: 50,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1, { message: 'El límite debe ser mayor o igual a 1' })
+  limit?: number;
 }

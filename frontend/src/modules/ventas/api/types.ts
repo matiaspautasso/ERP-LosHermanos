@@ -44,7 +44,7 @@ export interface VentaItem {
 
 export interface CreateVentaRequest {
   cliente_id: string;
-  tipo_venta: 'minorista' | 'mayorista' | 'supermayorista';
+  tipo_venta: 'Minorista' | 'Mayorista' | 'Supermayorista';
   forma_pago: 'Efectivo' | 'Tarjeta' | 'Transferencia';
   descuento_porcentaje: number;
   items: VentaItem[];
@@ -80,6 +80,18 @@ export interface VentaListItem {
   descuento: number;
 }
 
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface VentasListResponse {
+  data: VentaListItem[];
+  pagination: PaginationMeta;
+}
+
 export interface VentaDetalle {
   id: string;
   fecha: string;
@@ -106,6 +118,8 @@ export interface VentaFilters {
   hasta?: string;
   cliente_id?: string;
   tipo_venta?: string;
+  page?: number;
+  limit?: number;
 }
 
 // ===== GESTIÓN DE PRECIOS =====
