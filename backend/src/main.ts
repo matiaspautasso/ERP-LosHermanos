@@ -57,6 +57,10 @@ async function bootstrap() {
   // Prefijo global para todas las rutas
   app.setGlobalPrefix('api');
 
+  // ⚠️ CRÍTICO: Habilitar shutdown hooks para cerrar Prisma correctamente
+  // Esto asegura que onModuleDestroy() se ejecute al cerrar la app (SIGTERM, SIGINT)
+  app.enableShutdownHooks();
+
   const port = process.env.PORT || 3000;
   await app.listen(port);
 
