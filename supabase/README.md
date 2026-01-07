@@ -1,101 +1,140 @@
-# Configuración de Supabase en VS Code
+# Configuración de Supabase - ERP Los Hermanos
 
-## ✅ Configuración Completada
+> **Estado:** ✅ Configurado y funcional | **Última actualización:** Enero 2026
 
-La configuración de Supabase está **100% lista**. Archivos configurados:
+## 🎯 Información del Proyecto
 
-- `supabase/config.toml` - Configuración del proyecto Supabase
-- `supabase/.env` - Variables de entorno con API keys ✅
-- `supabase/setup.ps1` - Script de ayuda
-- `.vscode/settings.json` - Configuración completa de Supabase ✅
-- `.vscode/extensions.json` - Extensiones recomendadas
-- `ERP-LosHermanos.code-workspace` - Workspace configurado
+```
+Project ID:   rfhizunlwvoemvlscbqg
+Project URL:  https://rfhizunlwvoemvlscbqg.supabase.co
+Database:     aws-1-sa-east-1.pooler.supabase.com:5432
+User:         postgres.rfhizunlwvoemvlscbqg
+Status:       ✅ Operativo
+```
 
-## 🎯 Cómo Usar la Extensión
+---
 
-### Opción 1: Usando la Extensión de VS Code
+## 🚀 Inicio Rápido
 
-1. **Abre la Paleta de Comandos**: `Ctrl+Shift+P`
+### Opción 1: Paleta de Comandos VS Code
+1. Presiona `Ctrl+Shift+P`
+2. Escribe "Supabase"
+3. Selecciona el comando que necesites
 
-2. **Comandos disponibles**:
-   - `Supabase: Open Dashboard` - Abrir el panel de Supabase
-   - `Supabase: Open in Browser` - Ver proyecto en navegador
-   - Ver la documentación de la extensión para más comandos
+### Opción 2: SQLTools (Recomendado para queries)
+1. Click en ícono de base de datos en barra lateral
+2. Conecta a "ERP Los Hermanos"
+3. Explora tablas y ejecuta queries
 
-### Opción 2: Usar el Script de Setup
+### Opción 3: Dashboard Web
+Abre: https://app.supabase.com/project/rfhizunlwvoemvlscbqg
 
-```powershell
+---
+
+## 📁 Archivos de Configuración
+
+### Principales
+- ✅ `supabase/.env` - API keys y credenciales (configurado)
+- ✅ `supabase/config.toml` - Configuración del proyecto
+- ✅ `.vscode/settings.json` - Integración VS Code
+- ✅ `.gitignore` - Protección de credenciales
+
+### Credenciales Configuradas
+- ✅ Anon Key (public)
+- ✅ Service Role Key (secret) - ⚠️ Mantener privada
+- ✅ Database URL completa
+- ✅ Conexión pooler configurada
+
+---
+
+## 🔗 Enlaces Directos al Dashboard
+
+| Sección | URL |
+|---------|-----|
+| Dashboard Principal | https://app.supabase.com/project/rfhizunlwvoemvlscbqg |
+| Editor de Base de Datos | https://app.supabase.com/project/rfhizunlwvoemvlscbqg/editor |
+| SQL Editor | https://app.supabase.com/project/rfhizunlwvoemvlscbqg/sql |
+| API Settings | https://app.supabase.com/project/rfhizunlwvoemvlscbqg/settings/api |
+| Usuarios (Auth) | https://app.supabase.com/project/rfhizunlwvoemvlscbqg/auth/users |
+
+---
+
+## 🛠️ Comandos Útiles
+
+### Verificar conexión
+```bash
+# Ver info del proyecto
 .\supabase\setup.ps1
 ```
 
-### 1. Obtener las credenciales de Supabase
-
-1. Abre tu proyecto en Supabase: https://app.supabase.com/project/rfhizunlwvoemvlscbqg
-2. Ve a **Settings** → **API**
-3. Copia las siguientes credenciales:
-   - **Project URL** (ya configurada: `https://rfhizunlwvoemvlscbqg.supabase.co`)
-   - **anon public** key
-   - **service_role** key (¡Mantenerla secreta!)
-4. Ve a **Settings** → **Database** para obtener:
-   - La contraseña de la base de datos
-
-### 2. Crear archivo .env en la carpeta supabase
-
+### Ejecutar scripts SQL
 ```bash
-# Copia el archivo de ejemplo
-cp supabase/.env.example supabase/.env
+# Windows (Git Bash)
+"/c/Program Files/PostgreSQL/18/bin/psql.exe" \
+  "$DATABASE_URL" \
+  -f database/scripts/script.sql
+
+# O usar SQLTools en VS Code (más rápido)
 ```
 
-Luego edita `supabase/.env` y reemplaza:
-- `your-anon-key-here` con tu anon key
-- `your-service-role-key-here` con tu service role key
-- `YOUR_PASSWORD` con tu contraseña de base de datos
-
-### 3. Inicializar la extensión de Supabase
-
-Una vez configurado el archivo `.env`:
-
-1. Presiona **Ctrl+Shift+P** (o **Cmd+Shift+P** en Mac)
-2. Busca: **Supabase: Start**
-3. Selecciona tu proyecto
-
-### 4. Funcionalidades disponibles
-
-Con la extensión configurada podrás:
-
-- 🗄️ **Explorar la base de datos** - Barra lateral de Supabase
-- 📝 **Ejecutar queries SQL** - SQL Editor integrado
-- 🔐 **Gestionar autenticación** - Ver y administrar usuarios
-- 📊 **Ver logs** - Monitorear actividad del proyecto
-- 🌐 **Abrir Dashboard** - Acceso rápido al panel web
-
-### 5. Accesos Rápidos
-
-**Proyecto**: https://app.supabase.com/project/rfhizunlwvoemvlscbqg
-
-- [Dashboard](https://app.supabase.com/project/rfhizunlwvoemvlscbqg)
-- [API Settings](https://app.supabase.com/project/rfhizunlwvoemvlscbqg/settings/api)
-- [Database Editor](https://app.supabase.com/project/rfhizunlwvoemvlscbqg/editor)
-- [SQL Editor](https://app.supabase.com/project/rfhizunlwvoemvlscbqg/sql)
-- [Auth Users](https://app.supabase.com/project/rfhizunlwvoemvlscbqg/auth/users)
-
-### 5. Comandos útiles
-
-Presiona **Ctrl+Shift+P** y busca:
-- `Supabase: Connect to Project` - Conectar al proyecto
-- `Supabase: Run SQL Query` - Ejecutar query SQL
-- `Supabase: Generate Types` - Generar tipos TypeScript desde tu DB
-- `Supabase: Open Dashboard` - Abrir dashboard en el navegador
-
-## 🔗 Enlaces útiles
-
-- [Documentación de Supabase](https://supabase.com/docs)
-- [CLI de Supabase](https://supabase.com/docs/guides/cli)
-- [Panel de tu proyecto](https://app.supabase.com/project/rfhizunlwvoemvlscbqg)
+---
 
 ## 🛡️ Seguridad
 
-⚠️ **IMPORTANTE**: 
-- Nunca subas el archivo `supabase/.env` a Git
-- El archivo `.gitignore` ya debería incluir `*.env`
-- La `service_role` key tiene privilegios completos, mantenla segura
+### ⚠️ IMPORTANTE
+- ❌ **NUNCA** subas `supabase/.env` a Git
+- ❌ **NUNCA** compartas tu Service Role Key
+- ✅ `.gitignore` ya protege archivos `.env`
+- ✅ Service Role Key tiene privilegios totales - solo uso local
+
+### Rotación de credenciales
+Si necesitas regenerar keys:
+1. Ve a Settings → API en el dashboard
+2. Click en "Reset" junto a la key que quieras regenerar
+3. Actualiza `supabase/.env` con la nueva key
+
+---
+
+## 💡 Funcionalidades Disponibles
+
+Con la extensión de Supabase configurada puedes:
+
+- 🗄️ **Explorar base de datos** - Barra lateral con estructura completa
+- 📝 **Ejecutar queries SQL** - Editor integrado con autocomplete
+- 🔐 **Gestionar autenticación** - Ver y administrar usuarios
+- 👥 **Administración de datos** - CRUD visual de tablas
+- 📊 **Ver logs** - Monitoreo de actividad en tiempo real
+- 🔍 **Consultas en tiempo real** - Resultados instantáneos
+
+---
+
+## 🔧 Troubleshooting
+
+### Error: "Cannot connect to database"
+**Solución:**
+1. Verifica que `supabase/.env` tenga las credenciales correctas
+2. Verifica conexión a internet
+3. Verifica que el proyecto no esté pausado en Supabase dashboard
+
+### Error: "Prepared statement already exists"
+**Causa:** Usar conexión directa en lugar de pooler
+**Solución:** Usa la conexión con `pgbouncer=true` (ya configurada)
+
+### Extensión no aparece en VS Code
+**Solución:**
+1. Verifica que Supabase extension esté instalada
+2. Recarga VS Code: `Ctrl+Shift+P` → "Reload Window"
+3. Verifica `.vscode/settings.json` tenga configuración de Supabase
+
+---
+
+## 📚 Recursos
+
+- [Documentación de Supabase](https://supabase.com/docs)
+- [CLI de Supabase](https://supabase.com/docs/guides/cli)
+- [Guía de conexión Prisma](../backend/docs/PRISMA-CONNECTION-GUIDE.md)
+
+---
+
+**Configurado por:** ERP Los Hermanos Team
+**Última verificación:** Enero 2026

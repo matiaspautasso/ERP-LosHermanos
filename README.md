@@ -1,6 +1,6 @@
 # ERP Los Hermanos
 
-> **Estado:** En Desarrollo | **Progreso:** 65% | **Última Actualización:** Dic 2025
+> **Estado:** En Desarrollo | **Progreso:** 65% | **Última Actualización:** Enero 2026
 
 ## Qué es
 
@@ -54,6 +54,43 @@ npm run dev
 
 - **Email:** `vendedor@erp.com`
 - **Password:** `vendedor123`
+
+---
+
+## 📚 Guía de Documentación
+
+Este proyecto cuenta con documentación completa organizada por propósito:
+
+### Para empezar
+
+| Documento | Cuándo consultarlo |
+|-----------|-------------------|
+| **[README.md](README.md)** (este archivo) | Instalación inicial, comandos básicos, overview del proyecto |
+| **[CLAUDE.md](CLAUDE.md)** | Contexto rápido para Claude Code: rama actual, módulos activos, comandos esenciales |
+
+### Para desarrollar
+
+| Documento | Cuándo consultarlo |
+|-----------|-------------------|
+| **[ARQUITECTURA.md](ARQUITECTURA.md)** | Stack técnico, patrones de código, convenciones, troubleshooting |
+| **[ROADMAP.md](ROADMAP.md)** | Estado de módulos, próximos pasos, progreso del proyecto |
+
+### Para base de datos
+
+| Documento | Cuándo consultarlo |
+|-----------|-------------------|
+| **[database/README.md](database/README.md)** | Índice de scripts SQL disponibles y cuándo usarlos |
+| **[database/scripts/00-LEEME-estructura-y-reglas.md](database/scripts/00-LEEME-estructura-y-reglas.md)** | Reglas de negocio, constraints, funciones y vistas |
+| **[database/scripts/GUIA-SISTEMA-PRECIOS.md](database/scripts/GUIA-SISTEMA-PRECIOS.md)** | Sistema completo de gestión automática de precios |
+| **[backend/docs/PRISMA-CONNECTION-GUIDE.md](backend/docs/PRISMA-CONNECTION-GUIDE.md)** | Gestión de conexiones Prisma + Supabase |
+
+### Para Supabase
+
+| Documento | Cuándo consultarlo |
+|-----------|-------------------|
+| **[supabase/README.md](supabase/README.md)** | Configuración de Supabase en VS Code, enlaces al dashboard |
+
+---
 
 ## Ejecución del proyecto
 
@@ -152,6 +189,75 @@ npm run build            # Compilar para producción
 npm run preview          # Previsualizar build de producción
 ```
 
+---
+
+## 🔀 Workflow de Ramas
+
+**IMPORTANTE:** Siempre trabajar en ramas separadas para cambios significativos.
+
+### Antes de hacer cambios
+
+1. **Verificar rama actual**
+   ```bash
+   git branch
+   ```
+
+2. **Crear rama para nuevos cambios**
+   ```bash
+   git checkout -b feature/nombre-descriptivo
+   # o para fixes:
+   git checkout -b fix/nombre-descriptivo
+   ```
+
+### Durante el desarrollo
+
+3. **Commits frecuentes con mensajes descriptivos**
+   ```bash
+   git add .
+   git commit -m "feat: descripción clara del cambio"
+   ```
+
+4. **Push a remoto después de cada grupo lógico de cambios**
+   ```bash
+   git push -u origin feature/nombre-descriptivo
+   ```
+
+### Integración
+
+5. **Solicitar revisión antes de mergear**
+   - Crear Pull Request en GitHub
+   - Esperar aprobación
+   - Mergear a rama principal (desarrollo o main)
+
+### Ejemplo completo
+
+```bash
+# 1. Verificar rama actual
+git branch
+
+# 2. Crear rama nueva
+git checkout -b feature/mejora-clientes
+
+# 3. Hacer cambios, luego commits
+git add .
+git commit -m "feat: agregar validación de email en clientes"
+
+# 4. Push a remoto
+git push -u origin feature/mejora-clientes
+
+# 5. Crear PR en GitHub y esperar revisión
+# 6. Después de aprobación: merge a rama principal
+```
+
+**Ramas principales:**
+- `main` - Código en producción (estable)
+- `desarrollo` - Rama de integración principal
+- `ventas/cambios` - Desarrollo activo del módulo ventas
+- `feature/*` - Ramas de características nuevas
+- `fix/*` - Ramas de corrección de bugs
+
+---
+
 ## Variables de entorno
 
 ### Backend `.env`
@@ -190,12 +296,16 @@ VITE_API_URL=http://localhost:3000/api
 | Proveedores | 🔄 10% | Inicial | Pendiente |
 | Reportes | ⏳ 0% | Planificado | Planificado |
 
-## Documentación
+## 📖 Documentación Completa
 
-- **[CLAUDE.md](CLAUDE.md)** - Guía para desarrollo con Claude Code
-- **[ARQUITECTURA.md](ARQUITECTURA.md)** - Detalles técnicos, patrones, convenciones
-- **[ROADMAP.md](ROADMAP.md)** - Cronograma y planificación
-- **[docs/modulos/](docs/modulos/)** - Documentación específica por módulo
+Ver la sección **[📚 Guía de Documentación](#-guía-de-documentación)** más arriba para un índice completo de toda la documentación disponible organizada por propósito.
+
+**Enlaces rápidos:**
+- **[CLAUDE.md](CLAUDE.md)** - Contexto para Claude Code (rama actual, comandos, workflow)
+- **[ARQUITECTURA.md](ARQUITECTURA.md)** - Stack técnico completo, patrones y convenciones
+- **[ROADMAP.md](ROADMAP.md)** - Estado del proyecto y próximos pasos
+- **[database/README.md](database/README.md)** - Índice de scripts SQL
+- **[supabase/README.md](supabase/README.md)** - Configuración de Supabase
 
 ## Licencia
 
