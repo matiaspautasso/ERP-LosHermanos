@@ -20,7 +20,8 @@
       "Bash(\"/c/Program Files/PostgreSQL/18/bin/psql.exe\":*)",
       "Bash(\"C:/Program Files/PostgreSQL/18/bin/psql.exe\":*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git fetch:*)"
     ],
     "deny": [],
     "ask": []
