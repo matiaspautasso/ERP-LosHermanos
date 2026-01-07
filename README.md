@@ -251,8 +251,7 @@ git push -u origin feature/mejora-clientes
 
 **Ramas principales:**
 - `main` - Código en producción (estable)
-- `desarrollo` - Rama de integración principal
-- `ventas/cambios` - Desarrollo activo del módulo ventas
+- `desarrollo` - Rama de integración principal (usar para desarrollo)
 - `feature/*` - Ramas de características nuevas
 - `fix/*` - Ramas de corrección de bugs
 
