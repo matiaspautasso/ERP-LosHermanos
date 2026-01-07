@@ -96,6 +96,26 @@ git push -u origin feature/mejora-clientes
 # Después de revisión: merge a rama principal
 ```
 
+## Flujo de Agentes Claude Code
+
+**IMPORTANTE:** Este proyecto utiliza un flujo estructurado de 6 agentes especializados para desarrollo controlado.
+
+**Secuencia obligatoria:**
+1. `git-workspace-validator` - Validar estado del repositorio
+2. `arquitecto-cambios-controlados` - Implementar cambios de código
+3. `impact-analyzer` - Analizar impacto transversal
+4. `agente-documentar` - Actualizar documentación
+5. `git-commit-pusher` - Crear commits y push
+6. `validation-reporter` - Auditoría final
+
+Ver **[FLUJO-AGENTES.md](FLUJO-AGENTES.md)** para detalles completos sobre:
+- Roles y responsabilidades de cada agente
+- Restricciones de cada agente
+- Reglas no negociables del flujo
+- Definition of Done
+
+**Archivos de agentes:** Los agentes están definidos en `.claude/agents/`
+
 ## Documentación completa
 
 Para más detalles consulta:
@@ -103,6 +123,7 @@ Para más detalles consulta:
 - **[README.md](README.md)** - Instalación, comandos y guía de navegación de documentación
 - **[ARQUITECTURA.md](ARQUITECTURA.md)** - Stack técnico, patrones, convenciones completas
 - **[ROADMAP.md](ROADMAP.md)** - Fases, progreso y próximos pasos
+- **[FLUJO-AGENTES.md](FLUJO-AGENTES.md)** - Flujo de trabajo con agentes Claude Code
 - **[database/README.md](database/README.md)** - Índice de scripts de base de datos disponibles
 
 ## Credenciales de prueba

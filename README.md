@@ -67,6 +67,7 @@ Este proyecto cuenta con documentación completa organizada por propósito:
 |-----------|-------------------|
 | **[README.md](README.md)** (este archivo) | Instalación inicial, comandos básicos, overview del proyecto |
 | **[CLAUDE.md](CLAUDE.md)** | Contexto rápido para Claude Code: rama actual, módulos activos, comandos esenciales |
+| **[FLUJO-AGENTES.md](FLUJO-AGENTES.md)** | Flujo de trabajo con agentes Claude Code: roles, secuencia obligatoria, restricciones |
 
 ### Para desarrollar
 
@@ -301,6 +302,7 @@ Ver la sección **[📚 Guía de Documentación](#-guía-de-documentación)** m�
 
 **Enlaces rápidos:**
 - **[CLAUDE.md](CLAUDE.md)** - Contexto para Claude Code (rama actual, comandos, workflow)
+- **[FLUJO-AGENTES.md](FLUJO-AGENTES.md)** - Flujo de trabajo con agentes Claude Code
 - **[ARQUITECTURA.md](ARQUITECTURA.md)** - Stack técnico completo, patrones y convenciones
 - **[ROADMAP.md](ROADMAP.md)** - Estado del proyecto y próximos pasos
 - **[database/README.md](database/README.md)** - Índice de scripts SQL
