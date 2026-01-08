@@ -46,5 +46,6 @@
         "**/.git/**": true,
         "**/dist/**": true,
         "**/coverage/**": true
-    }
+    },
+    "postman.settings.dotenv-detection-notification-visibility": false
 }
