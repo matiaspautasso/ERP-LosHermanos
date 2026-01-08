@@ -42,17 +42,26 @@ async function bootstrap() {
     }),
   );
 
-  // Configuración de Swagger
-  const config = new DocumentBuilder()
-    .setTitle('ERP Los Hermanos API')
-    .setDescription('API del Sistema ERP Los Hermanos - Módulo de Gestión de Usuarios')
-    .setVersion('1.0')
-    .addTag('auth', 'Endpoints de autenticación y gestión de usuarios')
-    .addCookieAuth('sessionId')
-    .build();
+  // Configuración de Swagger (solo en desarrollo para mejorar tiempo de arranque)
+  if (process.env.NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('ERP Los Hermanos API')
+      .setDescription('API del Sistema ERP Los Hermanos - Módulo de Gestión de Usuarios')
+      .setVersion('1.0')
+      .addTag('auth', 'Endpoints de autenticación y gestión de usuarios')
+      .addCookieAuth('sessionId')
+      .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/docs', app, document, {
+      customSiteTitle: 'ERP Los Hermanos API Docs',
+      swaggerOptions: {
+        persistAuthorization: true,
+        filter: true,
+        displayRequestDuration: true,
+      },
+    });
+  }
 
   // Prefijo global para todas las rutas
   app.setGlobalPrefix('api');
