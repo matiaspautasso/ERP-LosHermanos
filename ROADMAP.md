@@ -1,6 +1,6 @@
 # ROADMAP - ERP Los Hermanos
 
-> **Estado:** Desarrollo Activo | **Progreso Global:** 65% | **Última Actualización:** Dic 2025
+> **Estado:** Desarrollo Activo | **Progreso Global:** 70% | **Última Actualización:** Ene 2026
 
 ## Objetivos del Proyecto
 
@@ -33,7 +33,7 @@ Desarrollar un sistema ERP modular y escalable para gestión integral de empresa
 
 ---
 
-## FASE 2: Operaciones Core ✅ 90%
+## FASE 2: Operaciones Core ✅ 100%
 
 **Objetivo:** Implementar funcionalidades principales de ventas y productos
 
@@ -44,23 +44,37 @@ Desarrollar un sistema ERP modular y escalable para gestión integral de empresa
 - Formas de pago (Efectivo, Tarjeta, Transferencia)
 - Exportación a PDF y Excel
 - Detalle de venta con historial
+- Filtrado automático de clientes por tipo de venta
+
+**Mejoras recientes (2026-01-08):**
+- Input de porcentaje mejorado en ajuste masivo
+- Prevención de doble click en operaciones críticas
+- Filtrado de clientes según tipo de venta
+- Warning visual durante operaciones en proceso
 
 **Estado:** ✅ Completado
 
-### 2.2 Gestión de Productos 🔄 70%
+### 2.2 Gestión de Productos ✅ 100%
 - CRUD de productos con categorías y unidades
 - Sistema de precios por tipo de venta
 - Gestión de precios individuales y masivos
 - Historial de cambios de precios con índices optimizados
 - Validación de jerarquía de precios
 - Exportación de lista de precios a Excel
+- UX optimizada en gestión de precios (2026-01-08)
 
-**Pendiente:**
-- Optimizaciones UX en gestión de precios
+**Mejoras recientes (2026-01-08):**
+- Prevención de doble click en ajuste masivo de precios
+- Input de porcentaje mejorado con capacidad de borrar valor cero
+- Estado de loading sincronizado entre componentes
+- Warning visual durante operaciones
+
+**Pendiente (Próximas fases):**
 - Gestión de stock en tiempo real
 - Alertas de stock mínimo
+- Integración con módulo de compras
 
-**Estado:** 🔄 En desarrollo
+**Estado:** ✅ Completado (Gestión de precios optimizada)
 
 ---
 
@@ -172,7 +186,7 @@ Desarrollar un sistema ERP modular y escalable para gestión integral de empresa
 |--------|------|----------|---------|----------|
 | Autenticación | 1 | ✅ 100% | Completo | Completo |
 | Ventas | 2 | ✅ 100% | Completo | Completo |
-| Productos | 2 | 🔄 70% | Completo | Funcional |
+| Productos | 2 | ✅ 100% | Completo | Completo |
 | Clientes | 3 | 🔄 50% | Completo | Pendiente |
 | Proveedores | 3 | 🔄 10% | Inicial | Pendiente |
 | Compras | 3 | 🔄 10% | Inicial | Pendiente |
@@ -186,23 +200,27 @@ Desarrollar un sistema ERP modular y escalable para gestión integral de empresa
 1. **Completar Módulo Clientes (Frontend)** - Fase 3.1
    - Crear todas las páginas de gestión de clientes
    - Integrar con sistema de ventas
+   - Implementar cuenta corriente
 
-2. **Optimizar Gestión de Precios** - Fase 2.2
-   - Mejorar UX de edición masiva
-   - Agregar validaciones adicionales
-
-3. **Implementar Módulo Proveedores** - Fase 3.2
+2. **Implementar Módulo Proveedores** - Fase 3.2
    - Backend CRUD completo
    - Frontend completo
+   - Integración con compras
 
-4. **Implementar Módulo Compras** - Fase 3.3
+3. **Implementar Módulo Compras** - Fase 3.3
    - Órdenes de compra
    - Recepción de mercadería
    - Integración con stock
 
+4. **Gestión de Stock** - Fase 2.2 (Extensión)
+   - Control de inventarios en tiempo real
+   - Alertas de stock mínimo
+   - Integración con compras y ventas
+
 5. **Dashboard y Reportes** - Fase 4
    - Métricas básicas
    - Reportes de ventas
+   - Análisis de negocio
 
 ---
 
