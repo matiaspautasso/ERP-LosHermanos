@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TipoPrecio } from '../api/types';
 
 interface ModalAjusteMasivoProps {
@@ -6,6 +6,7 @@ interface ModalAjusteMasivoProps {
   totalProductos: number;
   onAplicar: (config: AjusteMasivoConfig) => void;
   onCancel: () => void;
+  isLoading?: boolean;
 }
 
 export interface AjusteMasivoConfig {
@@ -19,16 +20,26 @@ export function ModalAjusteMasivo({
   totalProductos,
   onAplicar,
   onCancel,
+  isLoading = false,
 }: ModalAjusteMasivoProps) {
   const [config, setConfig] = useState<AjusteMasivoConfig>({
     porcentaje: 0,
     tipo: 'todos',
     aplicarSoloSeleccionados: productosSeleccionados.length > 0,
   });
+  const [porcentajeInput, setPorcentajeInput] = useState<string>('0');
+  const [aplicando, setAplicando] = useState(false);
 
   const productosAfectados = config.aplicarSoloSeleccionados
     ? productosSeleccionados.length
     : totalProductos;
+
+  // Sincronizar estado aplicando cuando termina la carga externa
+  useEffect(() => {
+    if (!isLoading && aplicando) {
+      setAplicando(false);
+    }
+  }, [isLoading, aplicando]);
 
   const handleAplicar = () => {
     if (config.porcentaje === 0) {
@@ -41,6 +52,7 @@ export function ModalAjusteMasivo({
       return;
     }
 
+    setAplicando(true);
     onAplicar(config);
   };
 
@@ -94,8 +106,12 @@ export function ModalAjusteMasivo({
             <input
               type="number"
               step="0.1"
-              value={config.porcentaje}
-              onChange={(e) => setConfig({ ...config, porcentaje: parseFloat(e.target.value) || 0 })}
+              value={porcentajeInput}
+              onChange={(e) => {
+                const value = e.target.value;
+                setPorcentajeInput(value);
+                setConfig({ ...config, porcentaje: parseFloat(value) || 0 });
+              }}
               placeholder="Ej: 10 o -5"
               className="w-full px-4 py-2 rounded border-[2px]"
               style={{
@@ -142,6 +158,15 @@ export function ModalAjusteMasivo({
           </p>
         </div>
 
+        {/* Warning de procesamiento */}
+        {(aplicando || isLoading) && (
+          <div className="mb-4 p-3 rounded border-[2px]" style={{ borderColor: '#fb923c', background: 'rgba(251, 146, 60, 0.1)' }}>
+            <p className="text-sm" style={{ color: '#fb923c' }}>
+              ⚠️ Aplicando ajuste masivo... Por favor, espere.
+            </p>
+          </div>
+        )}
+
         {/* Botones */}
         <div className="flex gap-4">
           <button
@@ -166,19 +191,22 @@ export function ModalAjusteMasivo({
 
           <button
             onClick={handleAplicar}
-            className="flex-1 px-4 py-2.5 rounded-lg transition-all"
+            disabled={aplicando || isLoading}
+            className="flex-1 px-4 py-2.5 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               background: 'linear-gradient(135deg, #FB6564 0%, #A03CEA 100%)',
               color: '#fff',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'linear-gradient(135deg, #fa4a49 0%, #8f2bd1 100%)';
+              if (!aplicando && !isLoading) {
+                e.currentTarget.style.background = 'linear-gradient(135deg, #fa4a49 0%, #8f2bd1 100%)';
+              }
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.background = 'linear-gradient(135deg, #FB6564 0%, #A03CEA 100%)';
             }}
           >
-            Aplicar Ajuste
+            {aplicando || isLoading ? 'Aplicando...' : 'Aplicar Ajuste'}
           </button>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Plus, Trash2, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
@@ -26,6 +26,13 @@ export default function NuevaVentaPage() {
   const [descuentoPorcentaje, setDescuentoPorcentaje] = useState<number | ''>('');
 
   const { data: clientes = [], isLoading: loadingClientes } = useClientes();
+
+  // Filtrar clientes según el tipo de venta
+  const clientesFiltrados = useMemo(() => {
+    return clientes.filter(cliente =>
+      cliente.tipo.toLowerCase() === tipoVenta.toLowerCase()
+    );
+  }, [clientes, tipoVenta]);
 
   const limpiarFormulario = () => {
     setProductos([]);
@@ -260,7 +267,7 @@ export default function NuevaVentaPage() {
                 <option value="" style={{ background: '#2c5b2d' }}>
                   Seleccionar cliente...
                 </option>
-                {clientes.map((cliente) => (
+                {clientesFiltrados.map((cliente) => (
                   <option key={cliente.id} value={cliente.id} style={{ background: '#2c5b2d' }}>
                     {cliente.nombre} {cliente.apellido} - {cliente.tipo}
                   </option>

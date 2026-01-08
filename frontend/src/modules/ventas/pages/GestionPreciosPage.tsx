@@ -397,6 +397,7 @@ export default function GestionPreciosPage() {
           totalProductos={productosFiltrados.length}
           onAplicar={handleAjusteMasivo}
           onCancel={() => setModalAjusteMasivoAbierto(false)}
+          isLoading={ajusteMasivoMutation.isPending}
         />
       )}
 
