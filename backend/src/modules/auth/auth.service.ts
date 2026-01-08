@@ -31,8 +31,8 @@ export class AuthService {
     const { email, username, password } = registerDto;
 
     // Verificar si el email ya existe
-    const existingEmail = await this.prisma.user.findUnique({
-      where: { email },
+    const existingEmail = await this.prisma.usuarios.findUnique({
+      where: { correo: email },
     });
 
     if (existingEmail) {
@@ -40,8 +40,8 @@ export class AuthService {
     }
 
     // Verificar si el username ya existe
-    const existingUsername = await this.prisma.user.findUnique({
-      where: { username },
+    const existingUsername = await this.prisma.usuarios.findUnique({
+      where: { usuario: username },
     });
 
     if (existingUsername) {
@@ -52,31 +52,36 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Crear el usuario
-    const user = await this.prisma.user.create({
+    const user = await this.prisma.usuarios.create({
       data: {
-        email,
-        username,
-        password: hashedPassword,
+        correo: email,
+        usuario: username,
+        contrasena_hash: hashedPassword,
       },
       select: {
         id: true,
-        email: true,
-        username: true,
-        createdAt: true,
+        correo: true,
+        usuario: true,
+        fecha_alta: true,
       },
     });
 
     // Emitir evento de dominio
     this.eventEmitter.emit(
       'user.registered',
-      new UserRegisteredEvent(user.id, user.email, user.username),
+      new UserRegisteredEvent(user.id, user.correo, user.usuario),
     );
 
-    this.logger.log(`Usuario registrado: ${user.email}`);
+    this.logger.log(`Usuario registrado: ${user.correo}`);
 
     return {
       message: 'Usuario registrado exitosamente',
-      user,
+      user: {
+        id: user.id,
+        email: user.correo,
+        username: user.usuario,
+        createdAt: user.fecha_alta,
+      },
     };
   }
 
@@ -87,9 +92,9 @@ export class AuthService {
     const { emailOrUsername, password } = loginDto;
 
     // Buscar usuario por email o username
-    const user = await this.prisma.user.findFirst({
+    const user = await this.prisma.usuarios.findFirst({
       where: {
-        OR: [{ email: emailOrUsername }, { username: emailOrUsername }],
+        OR: [{ correo: emailOrUsername }, { usuario: emailOrUsername }],
       },
     });
 
@@ -98,35 +103,35 @@ export class AuthService {
     }
 
     // Verificar si el usuario está activo
-    if (!user.isActive) {
+    if (!user.activo) {
       throw new UnauthorizedException('Usuario inactivo');
     }
 
     // Verificar la contraseña
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(password, user.contrasena_hash);
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Credenciales incorrectas');
     }
 
     // Actualizar último login
-    await this.prisma.user.update({
+    await this.prisma.usuarios.update({
       where: { id: user.id },
-      data: { lastLogin: new Date() },
+      data: { ultimo_acceso: new Date() },
     });
 
     // Emitir evento de dominio
-    this.eventEmitter.emit('user.logged-in', new UserLoggedInEvent(user.id, user.email));
+    this.eventEmitter.emit('user.logged-in', new UserLoggedInEvent(user.id, user.correo));
 
-    this.logger.log(`Usuario autenticado: ${user.email}`);
+    this.logger.log(`Usuario autenticado: ${user.correo}`);
 
     return {
       message: 'Inicio de sesión exitoso',
       user: {
         id: user.id,
-        email: user.email,
-        username: user.username,
-        isActive: user.isActive,
+        email: user.correo,
+        username: user.usuario,
+        isActive: user.activo,
       },
     };
   }
@@ -138,8 +143,8 @@ export class AuthService {
     const { email } = recoverDto;
 
     // Buscar usuario
-    const user = await this.prisma.user.findUnique({
-      where: { email },
+    const user = await this.prisma.usuarios.findUnique({
+      where: { correo: email },
     });
 
     if (!user) {
@@ -151,18 +156,18 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
 
     // Actualizar contraseña
-    await this.prisma.user.update({
+    await this.prisma.usuarios.update({
       where: { id: user.id },
-      data: { password: hashedPassword },
+      data: { contrasena_hash: hashedPassword },
     });
 
     // Emitir evento de dominio (un listener podría enviar el email)
     this.eventEmitter.emit(
       'user.password-recovery-requested',
-      new PasswordRecoveryRequestedEvent(user.id, user.email, temporaryPassword),
+      new PasswordRecoveryRequestedEvent(user.id, user.correo, temporaryPassword),
     );
 
-    this.logger.log(`Recuperación de contraseña solicitada para: ${user.email}`);
+    this.logger.log(`Recuperación de contraseña solicitada para: ${user.correo}`);
 
     return {
       message: 'Se ha enviado un nuevo usuario y contraseña a tu correo electrónico',
@@ -178,15 +183,15 @@ export class AuthService {
    * Obtener perfil de usuario
    */
   async getProfile(userId: bigint) {
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prisma.usuarios.findUnique({
       where: { id: userId },
       select: {
         id: true,
-        email: true,
-        username: true,
-        isActive: true,
-        lastLogin: true,
-        createdAt: true,
+        correo: true,
+        usuario: true,
+        activo: true,
+        ultimo_acceso: true,
+        fecha_alta: true,
       },
     });
 
@@ -194,7 +199,14 @@ export class AuthService {
       throw new NotFoundException('Usuario no encontrado');
     }
 
-    return user;
+    return {
+      id: user.id,
+      email: user.correo,
+      username: user.usuario,
+      isActive: user.activo,
+      lastLogin: user.ultimo_acceso,
+      createdAt: user.fecha_alta,
+    };
   }
 
   /**
@@ -215,9 +227,9 @@ export class AuthService {
     const { emailOrUsername, currentPassword, newPassword } = changePasswordDto;
 
     // Buscar usuario por email o username
-    const user = await this.prisma.user.findFirst({
+    const user = await this.prisma.usuarios.findFirst({
       where: {
-        OR: [{ email: emailOrUsername }, { username: emailOrUsername }],
+        OR: [{ correo: emailOrUsername }, { usuario: emailOrUsername }],
       },
     });
 
@@ -226,7 +238,7 @@ export class AuthService {
     }
 
     // Verificar contraseña actual
-    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.contrasena_hash);
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Contraseña actual incorrecta');
@@ -236,12 +248,12 @@ export class AuthService {
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
     // Actualizar contraseña
-    await this.prisma.user.update({
+    await this.prisma.usuarios.update({
       where: { id: user.id },
-      data: { password: hashedNewPassword },
+      data: { contrasena_hash: hashedNewPassword },
     });
 
-    this.logger.log(`Usuario ${user.username} cambió su contraseña`);
+    this.logger.log(`Usuario ${user.usuario} cambió su contraseña`);
 
     return {
       message: 'Contraseña actualizada exitosamente',

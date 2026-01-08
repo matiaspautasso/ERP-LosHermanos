@@ -315,9 +315,9 @@ export class VentasService {
             },
           },
         },
-        user: {
+        usuarios: {
           select: {
-            username: true,
+            usuario: true,
           },
         },
       },
@@ -338,7 +338,7 @@ export class VentasService {
       forma_pago: venta.forma_pago,
       descuento: Number(venta.descuento),
       total: Number(venta.total),
-      usuario: venta.user.username,
+      usuario: venta.usuarios.usuario,
       items: venta.detalle_venta.map((detalle) => ({
         producto: detalle.productos.nombre,
         unidad: detalle.productos.unidades.nombre,

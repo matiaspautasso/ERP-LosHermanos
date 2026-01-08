@@ -23,12 +23,12 @@ export class PasswordRecoveryListener {
 
     try {
       // Obtener el username real desde la base de datos
-      const user = await this.prisma.user.findUnique({
+      const user = await this.prisma.usuarios.findUnique({
         where: { id: event.userId },
-        select: { username: true },
+        select: { usuario: true },
       });
 
-      const username = user?.username || event.email.split('@')[0];
+      const username = user?.usuario || event.email.split('@')[0];
 
       // Enviar email con contraseña temporal
       await this.emailService.sendPasswordRecoveryEmail(

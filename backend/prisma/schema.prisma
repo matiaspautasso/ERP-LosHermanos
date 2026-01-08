@@ -7,6 +7,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model auditoria_precios {
+  id                             BigInt    @id @default(autoincrement())
+  producto_id                    BigInt
+  precio_anterior_supermayorista Decimal?  @db.Decimal(12, 2)
+  precio_anterior_mayorista      Decimal?  @db.Decimal(12, 2)
+  precio_anterior_minorista      Decimal?  @db.Decimal(12, 2)
+  precio_nuevo_supermayorista    Decimal?  @db.Decimal(12, 2)
+  precio_nuevo_mayorista         Decimal?  @db.Decimal(12, 2)
+  precio_nuevo_minorista         Decimal?  @db.Decimal(12, 2)
+  usuario_id                     BigInt?
+  fecha_cambio                   DateTime? @default(now()) @db.Timestamptz(6)
+  motivo                         String?   @db.VarChar(200)
+  fue_calculo_automatico         Boolean?  @default(false)
+
+  @@index([fecha_cambio(sort: Desc)], map: "ix_auditoria_precios_fecha")
+  @@index([producto_id, fecha_cambio(sort: Desc)], map: "ix_auditoria_precios_producto_fecha")
+}
+
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model categorias {
   id                        BigInt                     @id @default(autoincrement())
@@ -36,6 +55,39 @@ model clientes {
   @@index([correo], map: "ix_clientes_correo")
   @@index([nombre], map: "ix_clientes_nombre")
   @@index([tipo], map: "ix_clientes_tipo")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model config_margenes_categoria {
+  id                    BigInt     @id @default(autoincrement())
+  categoria_id          BigInt     @unique(map: "uq_config_margenes_categoria")
+  margen_supermayorista Decimal    @default(0.00) @db.Decimal(5, 2)
+  margen_mayorista      Decimal    @default(10.00) @db.Decimal(5, 2)
+  margen_minorista      Decimal    @default(20.00) @db.Decimal(5, 2)
+  activo                Boolean    @default(true)
+  fecha_creacion        DateTime   @default(now()) @db.Timestamptz(6)
+  usuario_id            BigInt?
+  categorias            categorias @relation(fields: [categoria_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  usuarios              usuarios?  @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model config_precio_producto {
+  id                     BigInt    @id @default(autoincrement())
+  producto_id            BigInt    @unique(map: "uq_config_precio_producto")
+  usa_calculo_automatico Boolean   @default(true)
+  costo_base_manual      Decimal?  @db.Decimal(12, 2)
+  margen_supermayorista  Decimal?  @db.Decimal(5, 2)
+  margen_mayorista       Decimal?  @db.Decimal(5, 2)
+  margen_minorista       Decimal?  @db.Decimal(5, 2)
+  activo                 Boolean   @default(true)
+  fecha_creacion         DateTime  @default(now()) @db.Timestamptz(6)
+  fecha_modificacion     DateTime  @default(now()) @db.Timestamptz(6)
+  usuario_id             BigInt?
+  productos              productos @relation(fields: [producto_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  usuarios               usuarios? @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -113,7 +165,7 @@ model movimientos_stock {
   doc_adjunto_ruta String?   @db.VarChar(260)
   usuario_id       BigInt
   productos        productos @relation(fields: [producto_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user             User      @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  usuarios         usuarios  @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([fecha_hora], map: "ix_mstock_fecha")
   @@index([producto_id], map: "ix_mstock_producto")
@@ -133,7 +185,7 @@ model ordenes_compra {
   usuario_id    BigInt
   detalle_oc    detalle_oc[]
   proveedores   proveedores   @relation(fields: [proveedor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user          User          @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  usuarios      usuarios      @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   recepciones   recepciones[]
 
   @@index([estado], map: "ix_oc_estado")
@@ -151,7 +203,7 @@ model pagos_cliente {
   observacion String?  @db.VarChar(200)
   usuario_id  BigInt
   clientes    clientes @relation(fields: [cliente_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user        User     @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  usuarios    usuarios @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([cliente_id], map: "ix_pagos_cliente")
   @@index([fecha], map: "ix_pagos_fecha")
@@ -160,6 +212,7 @@ model pagos_cliente {
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model precios {
   id                        BigInt    @id @default(autoincrement())
   producto_id               BigInt
@@ -170,11 +223,11 @@ model precios {
   precio_supermayorista     Decimal   @default(0) @db.Decimal(12, 2)
   calculado_automaticamente Boolean?  @default(false)
   productos                 productos @relation(fields: [producto_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user                      User      @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  usuarios                  usuarios  @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([producto_id], map: "ix_precios_producto")
-  @@index([ultima_modificacion], map: "ix_precios_ult")
   @@index([producto_id, ultima_modificacion(sort: Desc)], map: "ix_precios_producto_fecha")
+  @@index([ultima_modificacion], map: "ix_precios_ult")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -202,155 +255,6 @@ model productos {
   @@index([categoria_id], map: "ix_productos_categoria")
   @@index([nombre], map: "ix_productos_nombre")
   @@index([unidad_id], map: "ix_productos_unidad")
-}
-
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model proveedores {
-  id             BigInt           @id @default(autoincrement())
-  nombre         String           @db.VarChar(120)
-  telefono       String?          @db.VarChar(30)
-  correo         String?          @db.VarChar(120)
-  activo         Boolean          @default(true)
-  fecha_alta     DateTime         @default(now()) @db.Timestamptz(6)
-  ordenes_compra ordenes_compra[]
-
-  @@index([nombre], map: "ix_prov_nombre")
-}
-
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model recepciones {
-  id                BigInt              @id @default(autoincrement())
-  orden_id          BigInt
-  fecha             DateTime            @default(now()) @db.Timestamptz(6)
-  estado            String              @db.VarChar(12)
-  observaciones     String?             @db.VarChar(200)
-  usuario_id        BigInt
-  detalle_recepcion detalle_recepcion[]
-  ordenes_compra    ordenes_compra      @relation(fields: [orden_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user              User                @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@index([estado], map: "ix_rec_estado")
-  @@index([fecha], map: "ix_rec_fecha")
-  @@index([orden_id], map: "ix_rec_orden")
-}
-
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model recuperos_credenciales {
-  id            BigInt    @id @default(autoincrement())
-  usuario_id    BigInt
-  token         String    @unique(map: "uq_recupero_token") @db.VarChar(64)
-  solicitado_en DateTime  @default(now()) @db.Timestamptz(6)
-  utilizado_en  DateTime? @db.Timestamptz(6)
-  vigente       Boolean   @default(true)
-  user          User      @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@index([usuario_id], map: "ix_recupero_usuario")
-}
-
-model unidades {
-  id        BigInt      @id @default(autoincrement())
-  nombre    String      @unique(map: "uq_unidades_nombre") @db.VarChar(20)
-  productos productos[]
-
-  @@index([nombre], map: "ix_unidades_nombre")
-}
-
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model User {
-  id                        BigInt                      @id @default(autoincrement())
-  email                     String                      @unique(map: "uq_usuarios_correo") @map("correo") @db.VarChar(100)
-  username                  String                      @unique(map: "uq_usuarios_usuario") @map("usuario") @db.VarChar(60)
-  password                  String                      @map("contrasena_hash") @db.VarChar(255)
-  isActive                  Boolean                     @default(true) @map("activo")
-  createdAt                 DateTime                    @default(now()) @map("fecha_alta") @db.Timestamptz(6)
-  lastLogin                 DateTime?                   @map("ultimo_acceso") @db.Timestamptz(6)
-  rememberToken             String?                     @map("recordar_token") @db.VarChar(200)
-  config_margenes_categoria config_margenes_categoria[]
-  config_precio_producto    config_precio_producto[]
-  movimientos_stock         movimientos_stock[]
-  ordenes_compra            ordenes_compra[]
-  pagos_cliente             pagos_cliente[]
-  precios                   precios[]
-  recepciones               recepciones[]
-  recuperos_credenciales    recuperos_credenciales[]
-  ventas                    ventas[]
-
-  @@index([lastLogin], map: "ix_usuarios_ultimo_acceso")
-  @@map("usuarios")
-}
-
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model ventas {
-  id            BigInt          @id @default(autoincrement())
-  fecha         DateTime        @default(now()) @db.Timestamptz(6)
-  cliente_id    BigInt
-  tipo_venta    String          @db.VarChar(20)
-  descuento     Decimal         @default(0) @db.Decimal(12, 2)
-  total         Decimal         @db.Decimal(12, 2)
-  forma_pago    String          @db.VarChar(15)
-  usuario_id    BigInt
-  detalle_venta detalle_venta[]
-  clientes      clientes        @relation(fields: [cliente_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user          User            @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@index([cliente_id], map: "ix_ventas_cliente")
-  @@index([fecha], map: "ix_ventas_fecha")
-  @@index([forma_pago], map: "ix_ventas_pago")
-  @@index([tipo_venta], map: "ix_ventas_tipo")
-  @@index([total], map: "ix_ventas_total")
-  @@index([tipo_venta, fecha(sort: Desc)], map: "ix_ventas_tipo_fecha")
-}
-
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model auditoria_precios {
-  id                             BigInt    @id @default(autoincrement())
-  producto_id                    BigInt
-  precio_anterior_supermayorista Decimal?  @db.Decimal(12, 2)
-  precio_anterior_mayorista      Decimal?  @db.Decimal(12, 2)
-  precio_anterior_minorista      Decimal?  @db.Decimal(12, 2)
-  precio_nuevo_supermayorista    Decimal?  @db.Decimal(12, 2)
-  precio_nuevo_mayorista         Decimal?  @db.Decimal(12, 2)
-  precio_nuevo_minorista         Decimal?  @db.Decimal(12, 2)
-  usuario_id                     BigInt?
-  fecha_cambio                   DateTime? @default(now()) @db.Timestamptz(6)
-  motivo                         String?   @db.VarChar(200)
-  fue_calculo_automatico         Boolean?  @default(false)
-
-  @@index([fecha_cambio(sort: Desc)], map: "ix_auditoria_precios_fecha")
-  @@index([producto_id, fecha_cambio(sort: Desc)], map: "ix_auditoria_precios_producto_fecha")
-}
-
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model config_margenes_categoria {
-  id                    BigInt     @id @default(autoincrement())
-  categoria_id          BigInt     @unique(map: "uq_config_margenes_categoria")
-  margen_supermayorista Decimal    @default(0.00) @db.Decimal(5, 2)
-  margen_mayorista      Decimal    @default(10.00) @db.Decimal(5, 2)
-  margen_minorista      Decimal    @default(20.00) @db.Decimal(5, 2)
-  activo                Boolean    @default(true)
-  fecha_creacion        DateTime   @default(now()) @db.Timestamptz(6)
-  usuario_id            BigInt?
-  categorias            categorias @relation(fields: [categoria_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  usuarios              User?      @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-}
-
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model config_precio_producto {
-  id                     BigInt    @id @default(autoincrement())
-  producto_id            BigInt    @unique(map: "uq_config_precio_producto")
-  usa_calculo_automatico Boolean   @default(true)
-  costo_base_manual      Decimal?  @db.Decimal(12, 2)
-  margen_supermayorista  Decimal?  @db.Decimal(5, 2)
-  margen_mayorista       Decimal?  @db.Decimal(5, 2)
-  margen_minorista       Decimal?  @db.Decimal(5, 2)
-  activo                 Boolean   @default(true)
-  fecha_creacion         DateTime  @default(now()) @db.Timestamptz(6)
-  fecha_modificacion     DateTime  @default(now()) @db.Timestamptz(6)
-  usuario_id             BigInt?
-  productos              productos @relation(fields: [producto_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  usuarios               User?     @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
@@ -402,4 +306,100 @@ model productos_backup_20251215_171250 {
   ultima_modif DateTime? @db.Timestamptz(6)
 
   @@ignore
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model proveedores {
+  id             BigInt           @id @default(autoincrement())
+  nombre         String           @db.VarChar(120)
+  telefono       String?          @db.VarChar(30)
+  correo         String?          @db.VarChar(120)
+  activo         Boolean          @default(true)
+  fecha_alta     DateTime         @default(now()) @db.Timestamptz(6)
+  ordenes_compra ordenes_compra[]
+
+  @@index([nombre], map: "ix_prov_nombre")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model recepciones {
+  id                BigInt              @id @default(autoincrement())
+  orden_id          BigInt
+  fecha             DateTime            @default(now()) @db.Timestamptz(6)
+  estado            String              @db.VarChar(12)
+  observaciones     String?             @db.VarChar(200)
+  usuario_id        BigInt
+  detalle_recepcion detalle_recepcion[]
+  ordenes_compra    ordenes_compra      @relation(fields: [orden_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  usuarios          usuarios            @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([estado], map: "ix_rec_estado")
+  @@index([fecha], map: "ix_rec_fecha")
+  @@index([orden_id], map: "ix_rec_orden")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model recuperos_credenciales {
+  id            BigInt    @id @default(autoincrement())
+  usuario_id    BigInt
+  token         String    @unique(map: "uq_recupero_token") @db.VarChar(64)
+  solicitado_en DateTime  @default(now()) @db.Timestamptz(6)
+  utilizado_en  DateTime? @db.Timestamptz(6)
+  vigente       Boolean   @default(true)
+  usuarios      usuarios  @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([usuario_id], map: "ix_recupero_usuario")
+}
+
+model unidades {
+  id        BigInt      @id @default(autoincrement())
+  nombre    String      @unique(map: "uq_unidades_nombre") @db.VarChar(20)
+  productos productos[]
+
+  @@index([nombre], map: "ix_unidades_nombre")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model usuarios {
+  id                        BigInt                      @id @default(autoincrement())
+  correo                    String                      @unique(map: "uq_usuarios_correo") @db.VarChar(100)
+  usuario                   String                      @unique(map: "uq_usuarios_usuario") @db.VarChar(60)
+  contrasena_hash           String                      @db.VarChar(255)
+  activo                    Boolean                     @default(true)
+  fecha_alta                DateTime                    @default(now()) @db.Timestamptz(6)
+  ultimo_acceso             DateTime?                   @db.Timestamptz(6)
+  recordar_token            String?                     @db.VarChar(200)
+  config_margenes_categoria config_margenes_categoria[]
+  config_precio_producto    config_precio_producto[]
+  movimientos_stock         movimientos_stock[]
+  ordenes_compra            ordenes_compra[]
+  pagos_cliente             pagos_cliente[]
+  precios                   precios[]
+  recepciones               recepciones[]
+  recuperos_credenciales    recuperos_credenciales[]
+  ventas                    ventas[]
+
+  @@index([ultimo_acceso], map: "ix_usuarios_ultimo_acceso")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model ventas {
+  id            BigInt          @id @default(autoincrement())
+  fecha         DateTime        @default(now()) @db.Timestamptz(6)
+  cliente_id    BigInt
+  tipo_venta    String          @db.VarChar(20)
+  descuento     Decimal         @default(0) @db.Decimal(12, 2)
+  total         Decimal         @db.Decimal(12, 2)
+  forma_pago    String          @db.VarChar(15)
+  usuario_id    BigInt
+  detalle_venta detalle_venta[]
+  clientes      clientes        @relation(fields: [cliente_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  usuarios      usuarios        @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([cliente_id], map: "ix_ventas_cliente")
+  @@index([fecha], map: "ix_ventas_fecha")
+  @@index([forma_pago], map: "ix_ventas_pago")
+  @@index([tipo_venta], map: "ix_ventas_tipo")
+  @@index([tipo_venta, fecha(sort: Desc)], map: "ix_ventas_tipo_fecha")
+  @@index([total], map: "ix_ventas_total")
 }

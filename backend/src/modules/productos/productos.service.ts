@@ -411,9 +411,9 @@ export class ProductosService {
     const historial = await this.prisma.precios.findMany({
       where: whereConditions,
       include: {
-        user: {
+        usuarios: {
           select: {
-            username: true,
+            usuario: true,
           },
         },
       },
@@ -427,7 +427,7 @@ export class ProductosService {
     return historial.map((precio) => ({
       id: precio.id,
       fecha: precio.ultima_modificacion,
-      usuario: precio.user.username,
+      usuario: precio.usuarios.usuario,
       precio_minorista: precio.precio_minorista,
       precio_mayorista: precio.precio_mayorista,
       precio_supermayorista: precio.precio_supermayorista,
